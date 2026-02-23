@@ -1,0 +1,20 @@
+id: api_get
+name: "API GET Request"
+description: "Send a GET request to an API endpoint and return the response"
+tags: [api, get, http, request, rest]
+args:
+  url:
+    type: string
+    required: true
+    description: "API endpoint URL"
+  headers:
+    type: object
+    required: false
+    description: "Request headers (e.g. {\"Authorization\": \"Bearer token\"})"
+steps:
+  - id: api_request
+    module: api.get
+    label: "Send GET request"
+    params:
+      url: "{{url}}"
+      headers: "{{headers}}"

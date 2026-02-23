@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "flyto-blueprint"
+version = "0.1.0"
+description = "Self-evolving workflow pattern engine for Flyto"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+core = ["flyto-core>=2.12.0"]
+firestore = ["google-cloud-firestore", "firebase-admin"]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["flyto_blueprint"]

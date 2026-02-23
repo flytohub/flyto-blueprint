@@ -1,0 +1,25 @@
+id: api_post
+name: "API POST Request"
+description: "Send a POST request to an API endpoint with a JSON body"
+tags: [api, post, http, request, rest, json]
+args:
+  url:
+    type: string
+    required: true
+    description: "API endpoint URL"
+  body:
+    type: object
+    required: true
+    description: "JSON request body"
+  headers:
+    type: object
+    required: false
+    description: "Request headers (e.g. {\"Content-Type\": \"application/json\"})"
+steps:
+  - id: api_request
+    module: api.post
+    label: "Send POST request"
+    params:
+      url: "{{url}}"
+      body: "{{body}}"
+      headers: "{{headers}}"

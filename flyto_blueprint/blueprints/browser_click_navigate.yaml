@@ -1,0 +1,31 @@
+id: browser_click_navigate
+name: "Click and Navigate"
+description: "Open a website, click an element (link or button), and wait for navigation"
+tags: [browser, click, navigate, link, button]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Starting page URL"
+  click_selector:
+    type: string
+    required: true
+    description: "CSS selector for the element to click"
+  wait_selector:
+    type: string
+    required: false
+    description: "CSS selector to wait for after navigation"
+steps:
+  - id: click_element
+    module: browser.click
+    label: "Click element"
+    params:
+      selector: "{{click_selector}}"
+  - id: wait_navigation
+    module: browser.wait
+    label: "Wait for navigation"
+    skip_if_missing: [wait_selector]
+    params:
+      selector: "{{wait_selector}}"
+      state: "visible"

@@ -1,0 +1,32 @@
+id: browser_screenshot
+name: "Take Screenshot"
+description: "Open a website, wait for it to load, and take a screenshot"
+tags: [browser, screenshot, capture, image]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  wait_selector:
+    type: string
+    required: false
+    description: "CSS selector to wait for before taking screenshot"
+  full_page:
+    type: boolean
+    required: false
+    default: false
+    description: "Capture full page instead of viewport (default: false)"
+steps:
+  - id: wait_content
+    module: browser.wait
+    label: "Wait for content"
+    skip_if_missing: [wait_selector]
+    params:
+      selector: "{{wait_selector}}"
+      state: "visible"
+  - id: take_screenshot
+    module: browser.screenshot
+    label: "Take screenshot"
+    params:
+      full_page: "{{full_page}}"

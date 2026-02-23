@@ -1,0 +1,39 @@
+id: file_transform
+name: "File Transform"
+description: "Read a file, apply a text transformation, and write the result to another file"
+tags: [file, read, write, transform, text, string]
+args:
+  input_path:
+    type: string
+    required: true
+    description: "Path to the input file"
+  output_path:
+    type: string
+    required: true
+    description: "Path to write the output file"
+  operation:
+    type: string
+    required: true
+    description: "String operation module to apply (e.g. string.uppercase, string.replace)"
+  operation_params:
+    type: object
+    required: false
+    description: "Additional params for the string operation"
+steps:
+  - id: read_file
+    module: file.read
+    label: "Read input file"
+    params:
+      path: "{{input_path}}"
+  - id: transform
+    module: "{{operation}}"
+    label: "Transform content"
+    params:
+      text: "${steps.read_file.content}"
+      operation_params: "{{operation_params}}"
+  - id: write_file
+    module: file.write
+    label: "Write output file"
+    params:
+      path: "{{output_path}}"
+      content: "${steps.transform.result}"

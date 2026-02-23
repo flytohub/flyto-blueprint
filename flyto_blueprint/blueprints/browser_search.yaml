@@ -1,0 +1,41 @@
+id: browser_search
+name: "Search on Website"
+description: "Open a website, type a search query, submit with Enter, and wait for results"
+tags: [browser, search, type, press]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL (e.g. https://youtube.com)"
+  search_selector:
+    type: string
+    required: true
+    description: "CSS selector for the search input field"
+  query:
+    type: string
+    required: true
+    description: "Search query text"
+  wait_selector:
+    type: string
+    required: false
+    description: "CSS selector to wait for after search results load"
+steps:
+  - id: type_query
+    module: browser.type
+    label: "Type search query"
+    params:
+      selector: "{{search_selector}}"
+      text: "{{query}}"
+  - id: submit_search
+    module: browser.press
+    label: "Submit search"
+    params:
+      key: "Enter"
+  - id: wait_results
+    module: browser.wait
+    label: "Wait for results"
+    skip_if_missing: [wait_selector]
+    params:
+      selector: "{{wait_selector}}"
+      state: "visible"

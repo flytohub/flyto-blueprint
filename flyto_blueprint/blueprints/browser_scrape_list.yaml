@@ -1,0 +1,37 @@
+id: browser_scrape_list
+name: "Scrape List of Items"
+description: "Open a website and extract a list of items (e.g. product listings, search results)"
+tags: [browser, scrape, extract, list, multiple]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  wait_selector:
+    type: string
+    required: false
+    description: "CSS selector to wait for before extracting"
+  extract_selector:
+    type: string
+    required: true
+    description: "CSS selector matching multiple items to extract"
+  extract_type:
+    type: string
+    required: false
+    description: "What to extract: text, html, or attribute name (default: text)"
+steps:
+  - id: wait_content
+    module: browser.wait
+    label: "Wait for content"
+    skip_if_missing: [wait_selector]
+    params:
+      selector: "{{wait_selector}}"
+      state: "visible"
+  - id: extract_list
+    module: browser.extract
+    label: "Extract list items"
+    params:
+      selector: "{{extract_selector}}"
+      multiple: true
+      extract_type: "{{extract_type}}"

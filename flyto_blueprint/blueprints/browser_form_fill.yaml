@@ -1,0 +1,29 @@
+id: browser_form_fill
+name: "Fill and Submit Form"
+description: "Open a website, fill in form fields, and click the submit button"
+tags: [browser, form, fill, submit, type, click]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL with the form"
+  data:
+    type: object
+    required: true
+    description: "Key-value pairs to fill (key = field name/id/selector, value = content)"
+  submit_selector:
+    type: string
+    required: true
+    description: "CSS selector for the submit button"
+steps:
+  - id: fill_form
+    module: browser.form
+    label: "Fill form fields"
+    params:
+      data: "{{data}}"
+  - id: submit_form
+    module: browser.click
+    label: "Click submit"
+    params:
+      selector: "{{submit_selector}}"

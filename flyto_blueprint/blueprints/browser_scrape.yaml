@@ -1,0 +1,36 @@
+id: browser_scrape
+name: "Scrape Page Content"
+description: "Open a website, wait for content to load, and extract data from the page"
+tags: [browser, scrape, extract, data]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  wait_selector:
+    type: string
+    required: false
+    description: "CSS selector to wait for before extracting"
+  extract_selector:
+    type: string
+    required: true
+    description: "CSS selector for the element to extract data from"
+  extract_type:
+    type: string
+    required: false
+    description: "What to extract: text, html, or attribute name (default: text)"
+steps:
+  - id: wait_content
+    module: browser.wait
+    label: "Wait for content"
+    skip_if_missing: [wait_selector]
+    params:
+      selector: "{{wait_selector}}"
+      state: "visible"
+  - id: extract_data
+    module: browser.extract
+    label: "Extract data"
+    params:
+      selector: "{{extract_selector}}"
+      extract_type: "{{extract_type}}"

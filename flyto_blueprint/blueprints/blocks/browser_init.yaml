@@ -1,0 +1,14 @@
+id: browser_init
+name: "Browser Init"
+description: "Launch browser and navigate to URL"
+steps:
+  - id: launch_browser
+    module: browser.launch
+    label: "Launch Browser"
+    params:
+      headless: false
+  - id: navigate
+    module: browser.goto
+    label: "Go to website"
+    params:
+      url: "{{url}}"
