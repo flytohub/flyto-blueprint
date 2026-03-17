@@ -29,6 +29,7 @@ class BlueprintEngine:
     """
 
     def __init__(self, storage: Optional[StorageBackend] = None) -> None:
+        """Initialize the engine with an optional storage backend and load all blueprints."""
         self._storage = storage
         self._blueprints: Dict[str, dict] = {}
         self._blocks: Dict[str, dict] = {}
@@ -39,6 +40,7 @@ class BlueprintEngine:
     # ── Loading ────────────────────────────────────────────────────────
 
     def _load_all(self) -> None:
+        """Load builtin blueprints, compose blocks, and learned blueprints."""
         self._blocks = load_blocks()
         self._blueprints = load_builtins()
         self._load_learned()
@@ -70,6 +72,7 @@ class BlueprintEngine:
             logger.warning("Failed to load learned blueprints: %s", e)
 
     def _maybe_refresh_learned(self) -> None:
+        """Reload learned blueprints from storage if the TTL has expired."""
         if time.time() - self._last_learned_refresh > _LEARNED_CACHE_TTL:
             self._load_learned()
 

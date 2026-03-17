@@ -19,15 +19,18 @@ class SQLiteBackend(StorageBackend):
     """
 
     def __init__(self, db_path: Optional[str] = None) -> None:
+        """Initialize SQLite backend, creating the database file if needed."""
         self._db_path = str(db_path) if db_path else str(_DEFAULT_DB_PATH)
         Path(self._db_path).parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
         self._init_db()
 
     def _connect(self) -> sqlite3.Connection:
+        """Open a new SQLite connection to the database file."""
         return sqlite3.connect(self._db_path)
 
     def _init_db(self) -> None:
+        """Create the blueprints table if it does not exist."""
         with self._connect() as conn:
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS blueprints ("
@@ -38,11 +41,13 @@ class SQLiteBackend(StorageBackend):
             conn.commit()
 
     def load_all(self) -> List[dict]:
+        """Load and deserialize all blueprints from the database."""
         with self._connect() as conn:
             rows = conn.execute("SELECT data FROM blueprints").fetchall()
         return [json.loads(row[0]) for row in rows]
 
     def save(self, blueprint_id: str, data: dict) -> None:
+        """Serialize and upsert a blueprint row."""
         blob = json.dumps(data, ensure_ascii=False, default=str)
         with self._lock, self._connect() as conn:
             conn.execute(
@@ -52,6 +57,7 @@ class SQLiteBackend(StorageBackend):
             conn.commit()
 
     def update(self, blueprint_id: str, fields: dict) -> None:
+        """Merge *fields* into the stored JSON blob for *blueprint_id*."""
         with self._lock, self._connect() as conn:
             row = conn.execute(
                 "SELECT data FROM blueprints WHERE id = ?", (blueprint_id,)
@@ -67,6 +73,7 @@ class SQLiteBackend(StorageBackend):
             conn.commit()
 
     def load_one(self, blueprint_id: str) -> Optional[dict]:
+        """Load a single blueprint by ID, or return None if not found."""
         with self._connect() as conn:
             row = conn.execute(
                 "SELECT data FROM blueprints WHERE id = ?", (blueprint_id,)
@@ -74,6 +81,7 @@ class SQLiteBackend(StorageBackend):
         return json.loads(row[0]) if row else None
 
     def delete(self, blueprint_id: str) -> None:
+        """Delete the blueprint row for *blueprint_id*."""
         with self._lock, self._connect() as conn:
             conn.execute("DELETE FROM blueprints WHERE id = ?", (blueprint_id,))
             conn.commit()
@@ -83,6 +91,7 @@ class SQLiteBackend(StorageBackend):
         blueprint_id: str,
         update_fn: Callable[[dict], Optional[dict]],
     ) -> Optional[dict]:
+        """Read-modify-write under a threading lock for thread safety."""
         with self._lock, self._connect() as conn:
             row = conn.execute(
                 "SELECT data FROM blueprints WHERE id = ?", (blueprint_id,)

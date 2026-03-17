@@ -71,15 +71,18 @@ def expand_query(query: str) -> List[str]:
 
 
 def _pack_vector(vec: List[float]) -> bytes:
+    """Serialize a float list to compact binary (4 bytes per float)."""
     return struct.pack("{}f".format(len(vec)), *vec)
 
 
 def _unpack_vector(data: bytes) -> List[float]:
+    """Deserialize binary data back to a list of floats."""
     n = len(data) // 4
     return list(struct.unpack("{}f".format(n), data))
 
 
 def _cosine_similarity(a: List[float], b: List[float]) -> float:
+    """Compute cosine similarity between two float vectors."""
     dot = sum(x * y for x, y in zip(a, b))
     norm_a = math.sqrt(sum(x * x for x in a))
     norm_b = math.sqrt(sum(x * x for x in b))
@@ -99,10 +102,40 @@ def _bp_text(bp: dict) -> str:
     return " ".join(parts)
 
 
+def _score_candidate(
+    words: List[str],
+    tags: List[str],
+    id_words: List[str],
+    name_words: List[str],
+    desc: str,
+) -> float:
+    """Score how well *words* match a single blueprint's metadata.
+
+    Weights: exact tag 3.0, id word 2.0, name word 1.5,
+    partial tag substring 1.0, description substring 0.5.
+    """
+    score = 0.0
+    all_bp_words = set(tags + name_words + id_words)
+    for word in words:
+        if word in all_bp_words:
+            if word in tags:
+                score += 3.0
+            elif word in id_words:
+                score += 2.0
+            elif word in name_words:
+                score += 1.5
+        elif any(word in t for t in tags):
+            score += 1.0
+        elif word in desc:
+            score += 0.5
+    return score
+
+
 class IntentMatcher:
     """System-level blueprint matcher with embedding + keyword + tag fallback."""
 
     def __init__(self, blueprints: Dict[str, dict]) -> None:
+        """Initialize the matcher with a dict of blueprint_id to blueprint data."""
         self._blueprints = blueprints
         self._embeddings: Dict[str, List[float]] = {}  # bp_id → vector
         self._index_built = False
@@ -238,43 +271,29 @@ class IntentMatcher:
     def _match_keywords(self, query: str, top_k: int) -> List[Dict[str, Any]]:
         """Keyword matching with synonym expansion and BM25-like scoring."""
         expanded = expand_query(query)
+        original_words = query.lower().split()
         scored = []
 
         for bp_id, bp in self._blueprints.items():
             if bp.get("retired"):
                 continue
 
-            score = 0.0
             tags = [t.lower() for t in bp.get("tags", [])]
             name_words = bp.get("name", "").lower().split()
             desc = bp.get("description", "").lower()
             id_words = bp_id.lower().replace("_", " ").split()
-            all_bp_words = set(tags + name_words + id_words)
 
-            # Count how many expanded query words hit blueprint words
-            hits = 0
-            for word in expanded:
-                if word in all_bp_words:
-                    # Exact tag match is strongest signal
-                    if word in tags:
-                        score += 3.0
-                    elif word in id_words:
-                        score += 2.0
-                    elif word in name_words:
-                        score += 1.5
-                    hits += 1
-                elif any(word in t for t in tags):
-                    score += 1.0
-                    hits += 1
-                elif word in desc:
-                    score += 0.5
-                    hits += 1
+            score = _score_candidate(
+                expanded, tags, id_words, name_words, desc,
+            )
 
             # Coverage bonus: what % of original query words matched?
-            original_words = query.lower().split()
-            original_hits = sum(1 for w in original_words if w in all_bp_words
-                                or any(w in t for t in all_bp_words))
-            if len(original_words) > 0:
+            all_bp_words = set(tags + name_words + id_words)
+            if original_words:
+                original_hits = sum(
+                    1 for w in original_words
+                    if w in all_bp_words or any(w in t for t in all_bp_words)
+                )
                 coverage = original_hits / len(original_words)
                 score *= (0.5 + coverage * 0.5)
 
@@ -283,7 +302,6 @@ class IntentMatcher:
                 score += bp.get("score", 50) / 200.0
 
             if score > 0:
-                # Normalize to 0-1 range (approximate)
                 normalized = min(1.0, score / 15.0)
                 scored.append({"id": bp_id, "score": normalized, "method": "keyword"})
 
@@ -305,12 +323,14 @@ class QueryTracker:
     """
 
     def __init__(self, db_path: Optional[str] = None) -> None:
+        """Initialize the tracker with an optional SQLite database path."""
         self._db_path = db_path or str(
             Path(os.environ.get("FLYTO_CACHE_DIR", Path.home() / ".flyto")) / "query_tracker.db"
         )
         self._initialized = False
 
     async def init(self) -> None:
+        """Create the SQLite tables if they do not already exist."""
         if self._initialized:
             return
         import aiosqlite

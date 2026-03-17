@@ -65,60 +65,70 @@ def search_blueprints(query: str, blueprints: Dict[str, dict]) -> List[dict]:
         if bp.get("retired"):
             continue
 
-        bp_id = bp.get("id", "").lower()
-        name = bp.get("name", "").lower()
-        desc = bp.get("description", "").lower()
-        tags = [t.lower() for t in bp.get("tags", [])]
-        id_words = bp_id.replace("_", " ").split()
-        all_bp_text = set(tags + id_words + name.split())
-
-        score = 0.0
-
-        # --- Pass 1: Original words (full weight) ---
-        original_hits = 0
-        for word in query_words:
-            # Exact tag match = strongest
-            if word in tags:
-                score += 4.0
-                original_hits += 1
-            # In blueprint ID
-            elif word in id_words:
-                score += 3.0
-                original_hits += 1
-            # In name
-            elif word in name.split():
-                score += 2.0
-                original_hits += 1
-            # Partial substring in tag
-            elif any(word in t for t in tags):
-                score += 1.5
-                original_hits += 1
-            # In description
-            elif word in desc:
-                score += 0.5
-                original_hits += 1
-
-        # All-words bonus
-        if original_hits == len(query_words) and len(query_words) > 1:
-            score += 3.0
-
-        # --- Pass 2: Synonym words (half weight, only if original didn't fully match) ---
-        if original_hits < len(query_words) and synonym_words:
-            for word in synonym_words:
-                if word in tags:
-                    score += 1.5  # half weight of original
-                elif word in id_words:
-                    score += 1.0
-                elif any(word in t for t in tags):
-                    score += 0.5
-
-        # Quality bonus for learned blueprints
+        score = _score_blueprint(query_words, synonym_words, bp)
         if score > 0:
-            if bp.get("_source") == "learned":
-                score += bp.get("score", 50) / 100.0
-            else:
-                score += 1.0  # builtins get baseline bonus
             scored.append((score, bp))
 
     scored.sort(key=lambda x: x[0], reverse=True)
     return [bp_summary(bp) for _, bp in scored]
+
+
+def _score_blueprint(
+    query_words: List[str], synonym_words: List[str], bp: dict,
+) -> float:
+    """Score a single blueprint against query words and synonym expansions.
+
+    Two-pass scoring:
+    - Pass 1: original query words at full weight.
+    - Pass 2: synonym words at half weight (only when pass 1 has gaps).
+
+    Returns 0.0 when there are no matches (caller should skip the blueprint).
+    """
+    name = bp.get("name", "").lower()
+    desc = bp.get("description", "").lower()
+    tags = [t.lower() for t in bp.get("tags", [])]
+    id_words = bp.get("id", "").lower().replace("_", " ").split()
+
+    score = 0.0
+
+    # --- Pass 1: Original words (full weight) ---
+    original_hits = 0
+    for word in query_words:
+        if word in tags:
+            score += 4.0
+            original_hits += 1
+        elif word in id_words:
+            score += 3.0
+            original_hits += 1
+        elif word in name.split():
+            score += 2.0
+            original_hits += 1
+        elif any(word in t for t in tags):
+            score += 1.5
+            original_hits += 1
+        elif word in desc:
+            score += 0.5
+            original_hits += 1
+
+    # All-words bonus
+    if original_hits == len(query_words) and len(query_words) > 1:
+        score += 3.0
+
+    # --- Pass 2: Synonym words (half weight, only if original didn't fully match) ---
+    if original_hits < len(query_words) and synonym_words:
+        for word in synonym_words:
+            if word in tags:
+                score += 1.5
+            elif word in id_words:
+                score += 1.0
+            elif any(word in t for t in tags):
+                score += 0.5
+
+    # Quality bonus for learned blueprints
+    if score > 0:
+        if bp.get("_source") == "learned":
+            score += bp.get("score", 50) / 100.0
+        else:
+            score += 1.0  # builtins get baseline bonus
+
+    return score

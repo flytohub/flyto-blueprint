@@ -18,13 +18,16 @@ class FirestoreBackend(StorageBackend):
     """
 
     def __init__(self, db, collection: str = _DEFAULT_COLLECTION) -> None:
+        """Initialize with a Firestore client and optional collection name."""
         self._db = db
         self._collection = collection
 
     def _col(self):
+        """Return the Firestore collection reference."""
         return self._db.collection(self._collection)
 
     def load_all(self) -> List[dict]:
+        """Stream all documents from the collection as dicts."""
         results = []
         for doc in self._col().stream():
             data = doc.to_dict()
@@ -33,18 +36,22 @@ class FirestoreBackend(StorageBackend):
         return results
 
     def save(self, blueprint_id: str, data: dict) -> None:
+        """Set (create or overwrite) a Firestore document."""
         self._col().document(blueprint_id).set(data)
 
     def update(self, blueprint_id: str, fields: dict) -> None:
+        """Partially update fields on an existing Firestore document."""
         self._col().document(blueprint_id).update(fields)
 
     def load_one(self, blueprint_id: str) -> Optional[dict]:
+        """Fetch a single document by ID, or return None."""
         doc = self._col().document(blueprint_id).get()
         if doc.exists:
             return doc.to_dict()
         return None
 
     def delete(self, blueprint_id: str) -> None:
+        """Delete a Firestore document by ID."""
         self._col().document(blueprint_id).delete()
 
     def atomic_update(

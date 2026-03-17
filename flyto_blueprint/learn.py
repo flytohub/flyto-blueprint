@@ -62,7 +62,45 @@ def learn_from_workflow(
             counter += 1
             blueprint_id = "{}_{}".format(base_id, counter)
 
-    # Abstract params → build args
+    bp = _build_blueprint_dict(
+        steps=steps,
+        blocks=blocks,
+        blueprint_id=blueprint_id,
+        name=name,
+        tags=tags,
+        verified=verified,
+        description=workflow.get("description", ""),
+        fingerprint=fingerprint,
+    )
+
+    return {"ok": True, "data": bp}
+
+
+def _find_by_fingerprint(fingerprint: str, blueprints: Dict[str, dict]) -> Optional[str]:
+    """Find an existing learned blueprint with the same fingerprint."""
+    for bp_id, bp in blueprints.items():
+        if bp.get("_source") == "learned" and bp.get("fingerprint") == fingerprint:
+            return bp_id
+    return None
+
+
+def _build_blueprint_dict(
+    *,
+    steps: List[dict],
+    blocks: Dict[str, dict],
+    blueprint_id: str,
+    name: Optional[str],
+    tags: Optional[List[str]],
+    verified: bool,
+    description: str,
+    fingerprint: str,
+) -> dict:
+    """Construct a learned blueprint dict from abstracted workflow steps.
+
+    Handles parameter abstraction, compose detection, auto-generated
+    name/tags, and metadata initialization.
+    """
+    # Abstract params -> build args
     args_def: Dict[str, dict] = {}
     abstracted_steps = []
 
@@ -108,7 +146,7 @@ def learn_from_workflow(
     bp: dict = {
         "id": blueprint_id,
         "name": name,
-        "description": workflow.get("description", ""),
+        "description": description,
         "tags": tags,
         "args": args_def,
     }
@@ -125,12 +163,4 @@ def learn_from_workflow(
     bp["fingerprint"] = fingerprint
     bp["retired"] = False
 
-    return {"ok": True, "data": bp}
-
-
-def _find_by_fingerprint(fingerprint: str, blueprints: Dict[str, dict]) -> Optional[str]:
-    """Find an existing learned blueprint with the same fingerprint."""
-    for bp_id, bp in blueprints.items():
-        if bp.get("_source") == "learned" and bp.get("fingerprint") == fingerprint:
-            return bp_id
-    return None
+    return bp
