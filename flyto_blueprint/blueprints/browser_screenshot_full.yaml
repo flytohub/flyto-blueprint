@@ -1,0 +1,28 @@
+id: browser_screenshot_full
+name: "Full Page Screenshot"
+description: "Open a website and capture a full page screenshot"
+tags: [browser, screenshot, full, capture]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  output:
+    type: string
+    required: false
+    default: "screenshot.png"
+    description: "Output file path (default: screenshot.png)"
+steps:
+  - id: wait_load
+    module: browser.wait
+    label: "Wait for page to load"
+    params:
+      selector: "body"
+      state: "visible"
+  - id: take_screenshot
+    module: browser.screenshot
+    label: "Take full page screenshot"
+    params:
+      path: "{{output}}"
+      full_page: true

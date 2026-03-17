@@ -1,0 +1,25 @@
+id: browser_web_perf
+name: "Measure Web Performance"
+description: "Open a website and measure Web Vitals performance metrics"
+tags: [browser, performance, webvitals, audit]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  output:
+    type: string
+    required: false
+    default: "perf.json"
+    description: "Output file path for performance data (default: perf.json)"
+steps:
+  - id: measure_perf
+    module: browser.performance
+    label: "Measure performance metrics"
+  - id: save_result
+    module: file.write
+    label: "Save performance data"
+    params:
+      path: "{{output}}"
+      content: "{{measure_perf.result}}"

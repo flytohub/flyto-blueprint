@@ -1,0 +1,36 @@
+id: scrape_to_slack
+name: "Scrape and Send to Slack"
+description: "Scrape content from a webpage and send it to a Slack channel"
+tags: [browser, scrape, slack, notification]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  selector:
+    type: string
+    required: true
+    description: "CSS selector for the content to extract"
+  webhook_url:
+    type: string
+    required: true
+    description: "Slack incoming webhook URL"
+steps:
+  - id: wait_content
+    module: browser.wait
+    label: "Wait for content"
+    params:
+      selector: "{{selector}}"
+      state: "visible"
+  - id: extract_content
+    module: browser.extract
+    label: "Extract content"
+    params:
+      selector: "{{selector}}"
+  - id: send_to_slack
+    module: notification.slack.send_message
+    label: "Send to Slack"
+    params:
+      webhook_url: "{{webhook_url}}"
+      text: "{{extract_content.result}}"

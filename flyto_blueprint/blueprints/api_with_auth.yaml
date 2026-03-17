@@ -1,0 +1,27 @@
+id: api_with_auth
+name: "API Request with Bearer Token"
+description: "Send an authenticated API request using a Bearer token"
+tags: [api, auth, bearer, token, rest]
+args:
+  url:
+    type: string
+    required: true
+    description: "API endpoint URL"
+  token:
+    type: string
+    required: true
+    description: "Bearer authentication token"
+  method:
+    type: string
+    required: false
+    default: "GET"
+    description: "HTTP method (default: GET)"
+steps:
+  - id: api_request
+    module: http.request
+    label: "Send authenticated request"
+    params:
+      url: "{{url}}"
+      method: "{{method}}"
+      headers:
+        Authorization: "Bearer {{token}}"

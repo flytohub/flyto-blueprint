@@ -1,0 +1,58 @@
+id: browser_login
+name: "Login to Website"
+description: "Open a website and fill in login credentials to authenticate. If credentials are not provided, the agent will ask the user via ask_user tool. Supports detecting third-party login options (Google, Apple, etc.)."
+tags: [browser, login, auth, form, signin, authenticate]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Login page URL"
+  username_selector:
+    type: string
+    required: false
+    description: "CSS selector for the username/email input field (use browser.snapshot to find it)"
+  password_selector:
+    type: string
+    required: false
+    description: "CSS selector for the password input field (use browser.snapshot to find it)"
+  username:
+    type: string
+    required: false
+    description: "Username or email. If not provided, call ask_user to request from user."
+  password:
+    type: string
+    required: false
+    description: "Password. If not provided, call ask_user to request from user."
+  submit_selector:
+    type: string
+    required: false
+    description: "CSS selector for the submit/login button (use browser.snapshot to find it)"
+steps:
+  - id: wait_form
+    module: browser.wait
+    label: "Wait for login form"
+    skip_if_missing: [username_selector]
+    params:
+      selector: "{{username_selector}}"
+      state: "visible"
+  - id: type_username
+    module: browser.type
+    label: "Enter username"
+    skip_if_missing: [username_selector, username]
+    params:
+      selector: "{{username_selector}}"
+      text: "{{username}}"
+  - id: type_password
+    module: browser.type
+    label: "Enter password"
+    skip_if_missing: [password_selector, password]
+    params:
+      selector: "{{password_selector}}"
+      text: "{{password}}"
+  - id: click_submit
+    module: browser.click
+    label: "Click login button"
+    skip_if_missing: [submit_selector]
+    params:
+      selector: "{{submit_selector}}"

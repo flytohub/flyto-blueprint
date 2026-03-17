@@ -1,0 +1,38 @@
+id: google_search
+name: "Google Search"
+description: "Search Google and extract the results"
+tags: [browser, google, search, web]
+args:
+  query:
+    type: string
+    required: true
+    description: "Search query text"
+  max_results:
+    type: number
+    required: false
+    default: 10
+    description: "Maximum number of results to extract (default: 10)"
+steps:
+  - id: launch_browser
+    module: browser.launch
+    label: "Launch browser"
+    params:
+      headless: true
+  - id: navigate
+    module: browser.goto
+    label: "Go to Google search"
+    params:
+      url: "https://www.google.com/search?q={{query}}"
+  - id: wait_results
+    module: browser.wait
+    label: "Wait for search results"
+    params:
+      selector: ".g"
+      state: "visible"
+  - id: extract_results
+    module: browser.extract
+    label: "Extract search results"
+    params:
+      selector: ".g"
+      multiple: true
+      max_items: "{{max_results}}"

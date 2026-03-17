@@ -1,0 +1,27 @@
+id: browser_save_pdf
+name: "Save Webpage as PDF"
+description: "Open a website, wait for it to load, and save the page as a PDF file"
+tags: [browser, pdf, save, export]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  output:
+    type: string
+    required: false
+    default: "page.pdf"
+    description: "Output PDF file path (default: page.pdf)"
+steps:
+  - id: wait_load
+    module: browser.wait
+    label: "Wait for page to load"
+    params:
+      selector: "body"
+      timeout: 2000
+  - id: save_pdf
+    module: browser.pdf
+    label: "Save page as PDF"
+    params:
+      path: "{{output}}"

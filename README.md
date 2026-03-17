@@ -10,6 +10,13 @@ Blueprints are pre-built workflow patterns (YAML) that encode domain knowledge. 
 pip install flyto-blueprint
 ```
 
+## What's New in v0.2.0
+
+- **33 builtin blueprints** (up from 10) — covering browser automation, API calls, data processing, image manipulation, notification, monitoring, PDF, and OCR workflows
+- **Synonym-expanded search** — blueprint matching now expands synonyms and uses word-level scoring for more accurate results (e.g., "grab" matches "scrape", "picture" matches "screenshot")
+- **Intent matcher** — dynamically derives `context_key` values for the credential vault, so blueprints can auto-fill site-specific credentials without hardcoded mappings
+- **Query tracker** — records query-to-blueprint mappings after successful executions, enabling learning and analytics over time
+
 ## Quick Start
 
 ```python

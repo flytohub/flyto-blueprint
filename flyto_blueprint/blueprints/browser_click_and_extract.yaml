@@ -1,0 +1,45 @@
+id: browser_click_and_extract
+name: "Click and Extract Content"
+description: "Open a website, click an element, wait for new content, and extract it"
+tags: [browser, click, extract, navigate]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  click_selector:
+    type: string
+    required: true
+    description: "CSS selector for the element to click"
+  wait_selector:
+    type: string
+    required: true
+    description: "CSS selector to wait for after clicking"
+  extract_selector:
+    type: string
+    required: true
+    description: "CSS selector for the content to extract"
+steps:
+  - id: wait_clickable
+    module: browser.wait
+    label: "Wait for clickable element"
+    params:
+      selector: "{{click_selector}}"
+      state: "visible"
+  - id: click_element
+    module: browser.click
+    label: "Click element"
+    params:
+      selector: "{{click_selector}}"
+  - id: wait_content
+    module: browser.wait
+    label: "Wait for new content"
+    params:
+      selector: "{{wait_selector}}"
+      state: "visible"
+  - id: extract_content
+    module: browser.extract
+    label: "Extract content"
+    params:
+      selector: "{{extract_selector}}"

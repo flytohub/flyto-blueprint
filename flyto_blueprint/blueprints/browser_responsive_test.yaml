@@ -1,0 +1,49 @@
+id: browser_responsive_test
+name: "Responsive Screenshot Test"
+description: "Open a website and take screenshots at mobile, tablet, and desktop breakpoints"
+tags: [browser, responsive, screenshot, test]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  prefix:
+    type: string
+    required: false
+    default: "responsive"
+    description: "Output filename prefix (default: responsive)"
+steps:
+  - id: viewport_mobile
+    module: browser.viewport
+    label: "Set mobile viewport"
+    params:
+      width: 390
+      height: 844
+  - id: screenshot_mobile
+    module: browser.screenshot
+    label: "Screenshot mobile"
+    params:
+      path: "{{prefix}}-mobile.png"
+  - id: viewport_tablet
+    module: browser.viewport
+    label: "Set tablet viewport"
+    params:
+      width: 768
+      height: 1024
+  - id: screenshot_tablet
+    module: browser.screenshot
+    label: "Screenshot tablet"
+    params:
+      path: "{{prefix}}-tablet.png"
+  - id: viewport_desktop
+    module: browser.viewport
+    label: "Set desktop viewport"
+    params:
+      width: 1440
+      height: 900
+  - id: screenshot_desktop
+    module: browser.screenshot
+    label: "Screenshot desktop"
+    params:
+      path: "{{prefix}}-desktop.png"

@@ -1,0 +1,38 @@
+id: browser_scrape_table
+name: "Extract Table Data"
+description: "Open a website, wait for a table to load, and extract its data to a JSON file"
+tags: [browser, scrape, table, data]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  table_selector:
+    type: string
+    required: false
+    default: "table"
+    description: "CSS selector for the table element (default: table)"
+  output:
+    type: string
+    required: false
+    default: "table.json"
+    description: "Output file path (default: table.json)"
+steps:
+  - id: wait_table
+    module: browser.wait
+    label: "Wait for table"
+    params:
+      selector: "{{table_selector}}"
+      state: "visible"
+  - id: extract_table
+    module: browser.extract_table
+    label: "Extract table data"
+    params:
+      selector: "{{table_selector}}"
+  - id: save_result
+    module: file.write
+    label: "Save table data"
+    params:
+      path: "{{output}}"
+      content: "{{extract_table.result}}"

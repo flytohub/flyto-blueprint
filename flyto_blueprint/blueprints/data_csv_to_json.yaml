@@ -1,0 +1,31 @@
+id: data_csv_to_json
+name: "Convert CSV to JSON"
+description: "Read a CSV file and convert it to JSON format"
+tags: [data, csv, json, convert, transform]
+args:
+  input:
+    type: string
+    required: true
+    description: "Input CSV file path"
+  output:
+    type: string
+    required: false
+    default: "output.json"
+    description: "Output JSON file path (default: output.json)"
+steps:
+  - id: read_csv
+    module: data.csv.read
+    label: "Read CSV file"
+    params:
+      path: "{{input}}"
+  - id: convert_to_json
+    module: data.json.stringify
+    label: "Convert to JSON"
+    params:
+      data: "{{read_csv.result}}"
+  - id: save_json
+    module: file.write
+    label: "Save JSON file"
+    params:
+      path: "{{output}}"
+      content: "{{convert_to_json.result}}"

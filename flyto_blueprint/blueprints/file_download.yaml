@@ -1,0 +1,21 @@
+id: file_download
+name: "Download File"
+description: "Download a file from a URL and save it locally"
+tags: [file, download, http, save]
+args:
+  url:
+    type: string
+    required: true
+    description: "URL of the file to download"
+  output:
+    type: string
+    required: false
+    default: "downloaded_file"
+    description: "Output file path (default: downloaded_file)"
+steps:
+  - id: download
+    module: http.download
+    label: "Download file"
+    params:
+      url: "{{url}}"
+      path: "{{output}}"

@@ -1,0 +1,21 @@
+id: monitor_http
+name: "HTTP Health Check"
+description: "Check if a website or API endpoint is up and responding"
+tags: [monitor, http, health, uptime, check]
+args:
+  url:
+    type: string
+    required: true
+    description: "URL to check"
+  timeout:
+    type: number
+    required: false
+    default: 5000
+    description: "Request timeout in milliseconds (default: 5000)"
+steps:
+  - id: health_check
+    module: monitor.http_check
+    label: "Check HTTP health"
+    params:
+      url: "{{url}}"
+      timeout: "{{timeout}}"

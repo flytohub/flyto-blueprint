@@ -1,0 +1,31 @@
+id: browser_page_audit
+name: "Page Audit"
+description: "Run a page audit capturing performance metrics and a full page screenshot"
+tags: [browser, audit, performance, screenshot]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  output_prefix:
+    type: string
+    required: false
+    default: "audit"
+    description: "Output filename prefix (default: audit)"
+steps:
+  - id: measure_perf
+    module: browser.performance
+    label: "Measure performance metrics"
+  - id: take_screenshot
+    module: browser.screenshot
+    label: "Take full page screenshot"
+    params:
+      path: "{{output_prefix}}-screenshot.png"
+      full_page: true
+  - id: save_perf
+    module: file.write
+    label: "Save performance data"
+    params:
+      path: "{{output_prefix}}-perf.json"
+      content: "{{measure_perf.result}}"

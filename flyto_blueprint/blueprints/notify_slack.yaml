@@ -1,0 +1,20 @@
+id: notify_slack
+name: "Send Slack Message"
+description: "Send a message to a Slack channel via webhook"
+tags: [notification, slack, message, alert]
+args:
+  webhook_url:
+    type: string
+    required: true
+    description: "Slack incoming webhook URL"
+  text:
+    type: string
+    required: true
+    description: "Message text to send"
+steps:
+  - id: send_message
+    module: notification.slack.send_message
+    label: "Send Slack message"
+    params:
+      webhook_url: "{{webhook_url}}"
+      text: "{{text}}"

@@ -1,0 +1,37 @@
+id: scrape_and_save
+name: "Scrape and Save to File"
+description: "Scrape text content from a webpage and save it to a file"
+tags: [browser, scrape, save, file, export]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  selector:
+    type: string
+    required: true
+    description: "CSS selector for the content to extract"
+  output:
+    type: string
+    required: false
+    default: "scraped.txt"
+    description: "Output file path (default: scraped.txt)"
+steps:
+  - id: wait_content
+    module: browser.wait
+    label: "Wait for content"
+    params:
+      selector: "{{selector}}"
+      state: "visible"
+  - id: extract_content
+    module: browser.extract
+    label: "Extract content"
+    params:
+      selector: "{{selector}}"
+  - id: save_file
+    module: file.write
+    label: "Save to file"
+    params:
+      path: "{{output}}"
+      content: "{{extract_content.result}}"

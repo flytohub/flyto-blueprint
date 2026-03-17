@@ -1,0 +1,26 @@
+id: pdf_extract_text
+name: "Extract Text from PDF"
+description: "Extract text content from a PDF document and save to a file"
+tags: [pdf, extract, text, read, document]
+args:
+  input:
+    type: string
+    required: true
+    description: "Input PDF file path"
+  output:
+    type: string
+    required: false
+    default: "extracted.txt"
+    description: "Output text file path (default: extracted.txt)"
+steps:
+  - id: extract_pdf
+    module: document.pdf.extract
+    label: "Extract text from PDF"
+    params:
+      path: "{{input}}"
+  - id: save_text
+    module: file.write
+    label: "Save extracted text"
+    params:
+      path: "{{output}}"
+      content: "{{extract_pdf.result}}"

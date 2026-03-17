@@ -1,0 +1,21 @@
+id: ocr_image
+name: "OCR Extract Text from Image"
+description: "Extract text from an image using optical character recognition"
+tags: [ocr, image, text, extract, read]
+args:
+  input:
+    type: string
+    required: true
+    description: "Input image file path"
+  language:
+    type: string
+    required: false
+    default: "eng"
+    description: "OCR language code (default: eng)"
+steps:
+  - id: ocr
+    module: image.ocr
+    label: "Extract text from image"
+    params:
+      input: "{{input}}"
+      language: "{{language}}"

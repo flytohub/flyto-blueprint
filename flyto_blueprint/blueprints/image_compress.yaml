@@ -1,0 +1,27 @@
+id: image_compress
+name: "Compress Image"
+description: "Compress an image file to reduce its size"
+tags: [image, compress, optimize, file]
+args:
+  input:
+    type: string
+    required: true
+    description: "Input image file path"
+  quality:
+    type: number
+    required: false
+    default: 80
+    description: "Compression quality 1-100 (default: 80)"
+  output:
+    type: string
+    required: false
+    default: "compressed.jpg"
+    description: "Output file path (default: compressed.jpg)"
+steps:
+  - id: compress
+    module: image.compress
+    label: "Compress image"
+    params:
+      input: "{{input}}"
+      quality: "{{quality}}"
+      output: "{{output}}"

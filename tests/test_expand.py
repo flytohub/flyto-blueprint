@@ -54,8 +54,9 @@ class TestExpand:
             "url": "https://x.com", "username": "u", "password": "p",
             "username_selector": "#u", "password_selector": "#p", "submit_selector": "#s",
         })
-        step = next(s for s in r["data"]["steps"] if s["id"] == "login")
-        assert step["params"]["username_selector"] == "#u"
+        step = next(s for s in r["data"]["steps"] if s["id"] == "type_username")
+        assert step["params"]["selector"] == "#u"
+        assert step["params"]["text"] == "u"
 
     def test_browser_screenshot_full_page(self, engine):
         r = engine.expand("browser_screenshot", {"url": "https://x.com", "full_page": True})

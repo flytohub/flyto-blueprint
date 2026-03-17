@@ -1,0 +1,37 @@
+id: browser_scrape_js
+name: "Scrape Dynamic Content with JavaScript"
+description: "Open a website, wait for dynamic content, evaluate JavaScript to extract data, and save to file"
+tags: [browser, scrape, javascript, dynamic]
+compose: [browser_init]
+args:
+  url:
+    type: string
+    required: true
+    description: "Target website URL"
+  selector:
+    type: string
+    required: true
+    description: "CSS selector to wait for and query via JavaScript"
+  output:
+    type: string
+    required: false
+    default: "scraped.json"
+    description: "Output file path (default: scraped.json)"
+steps:
+  - id: wait_content
+    module: browser.wait
+    label: "Wait for dynamic content"
+    params:
+      selector: "{{selector}}"
+      state: "visible"
+  - id: evaluate_js
+    module: browser.evaluate
+    label: "Extract data with JavaScript"
+    params:
+      expression: "Array.from(document.querySelectorAll('{{selector}}')).map(el => ({ text: el.textContent.trim(), html: el.innerHTML }))"
+  - id: save_result
+    module: file.write
+    label: "Save extracted data"
+    params:
+      path: "{{output}}"
+      content: "{{evaluate_js.result}}"
