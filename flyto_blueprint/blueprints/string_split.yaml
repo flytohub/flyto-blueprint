@@ -1,0 +1,22 @@
+id: string_split
+name: "Split Text"
+description: "Split text by a delimiter into a list of items"
+tags: [string, split, text, delimiter, list]
+connections:
+  output_field: "data.result"
+args:
+  text:
+    type: string
+    required: true
+    description: "Text to split"
+  delimiter:
+    type: string
+    required: false
+    description: "Delimiter to split by (default: newline)"
+steps:
+  - id: split_text
+    module: string.split
+    label: "Split text by delimiter"
+    params:
+      text: "{{text}}"
+      delimiter: "{{delimiter}}"

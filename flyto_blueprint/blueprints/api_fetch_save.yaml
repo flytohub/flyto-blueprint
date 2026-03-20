@@ -2,30 +2,26 @@ id: api_fetch_save
 name: "Fetch API and Save Response"
 description: "Send a GET request to an API endpoint and save the response to a file"
 tags: [api, fetch, save, file, json]
+connections:
+  output_field: "data.result"
 args:
   url:
     type: string
     required: true
     description: "API endpoint URL"
-  headers:
-    type: object
-    required: false
-    description: "Request headers (e.g. {\"Accept\": \"application/json\"})"
-  output:
+  path:
     type: string
-    required: false
-    default: "response.json"
-    description: "Output file path (default: response.json)"
+    required: true
+    description: "Output file path"
 steps:
   - id: api_request
-    module: api.get
+    module: http.get
     label: "Send GET request"
     params:
       url: "{{url}}"
-      headers: "{{headers}}"
   - id: save_response
     module: file.write
     label: "Save response to file"
     params:
-      path: "{{output}}"
-      content: "{{api_request.result}}"
+      path: "{{path}}"
+      content: "${steps.api_request.data.body}"

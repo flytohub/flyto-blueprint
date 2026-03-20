@@ -1,0 +1,27 @@
+id: email_send
+name: "Send Email"
+description: "Send an email message to a recipient"
+tags: [email, send, notification, message]
+connections:
+  output_field: "data.message_id"
+args:
+  to:
+    type: string
+    required: true
+    description: "Recipient email address"
+  subject:
+    type: string
+    required: true
+    description: "Email subject line"
+  body:
+    type: string
+    required: true
+    description: "Email body content"
+steps:
+  - id: send_email
+    module: email.send
+    label: "Send email"
+    params:
+      to: "{{to}}"
+      subject: "{{subject}}"
+      body: "{{body}}"

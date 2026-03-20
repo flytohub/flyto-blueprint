@@ -35,4 +35,4 @@ steps:
     label: "Save table data"
     params:
       path: "{{output}}"
-      content: "{{extract_table.result}}"
+      content: "${steps.extract_table.data.result}"

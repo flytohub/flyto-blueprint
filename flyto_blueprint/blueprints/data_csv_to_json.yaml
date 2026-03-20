@@ -9,23 +9,22 @@ args:
     description: "Input CSV file path"
   output:
     type: string
-    required: false
-    default: "output.json"
-    description: "Output JSON file path (default: output.json)"
+    required: true
+    description: "Output JSON file path"
 steps:
   - id: read_csv
     module: data.csv.read
     label: "Read CSV file"
     params:
-      path: "{{input}}"
+      file_path: "{{input}}"
   - id: convert_to_json
     module: data.json.stringify
     label: "Convert to JSON"
     params:
-      data: "{{read_csv.result}}"
+      data: "${steps.read_csv.data.content}"
   - id: save_json
     module: file.write
     label: "Save JSON file"
     params:
       path: "{{output}}"
-      content: "{{convert_to_json.result}}"
+      content: "${steps.convert_to_json.data.result}"

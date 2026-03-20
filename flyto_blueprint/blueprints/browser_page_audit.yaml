@@ -28,4 +28,4 @@ steps:
     label: "Save performance data"
     params:
       path: "{{output_prefix}}-perf.json"
-      content: "{{measure_perf.result}}"
+      content: "${steps.measure_perf.data.result}"

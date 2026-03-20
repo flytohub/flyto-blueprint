@@ -34,4 +34,4 @@ steps:
     label: "Save extracted data"
     params:
       path: "{{output}}"
-      content: "{{evaluate_js.result}}"
+      content: "${steps.evaluate_js.data.result}"

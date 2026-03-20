@@ -1,0 +1,22 @@
+id: file_save
+name: "Save File"
+description: "Write content to a file"
+tags: [file, write, save, output]
+connections:
+  output_field: "data.path"
+args:
+  path:
+    type: string
+    required: true
+    description: "File path to write to"
+  content:
+    type: string
+    required: true
+    description: "Content to write"
+steps:
+  - id: write_file
+    module: file.write
+    label: "Write file"
+    params:
+      path: "{{path}}"
+      content: "{{content}}"

@@ -33,4 +33,4 @@ steps:
     label: "Send to Slack"
     params:
       webhook_url: "{{webhook_url}}"
-      text: "{{extract_content.result}}"
+      text: "${steps.extract_content.data.result}"

@@ -1,0 +1,22 @@
+id: http_get
+name: "HTTP GET Request"
+description: "Fetch data from a URL via HTTP GET"
+tags: [http, get, request, fetch, api]
+connections:
+  output_field: "data.body"
+args:
+  url:
+    type: string
+    required: true
+    description: "URL to fetch"
+  headers:
+    type: object
+    required: false
+    description: "Request headers"
+steps:
+  - id: http_request
+    module: http.get
+    label: "Send GET request"
+    params:
+      url: "{{url}}"
+      headers: "{{headers}}"

@@ -1,0 +1,17 @@
+id: search_google
+name: "Search Google (API)"
+description: "Search Google using the API and return results"
+tags: [google, search, api, web, query]
+connections:
+  output_field: "data.result"
+args:
+  query:
+    type: string
+    required: true
+    description: "Search query text"
+steps:
+  - id: search
+    module: core.api.google_search
+    label: "Google search"
+    params:
+      query: "{{query}}"

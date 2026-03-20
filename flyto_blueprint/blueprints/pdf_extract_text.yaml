@@ -14,7 +14,7 @@ args:
     description: "Output text file path (default: extracted.txt)"
 steps:
   - id: extract_pdf
-    module: document.pdf.extract
+    module: pdf.parse
     label: "Extract text from PDF"
     params:
       path: "{{input}}"
@@ -23,4 +23,4 @@ steps:
     label: "Save extracted text"
     params:
       path: "{{output}}"
-      content: "{{extract_pdf.result}}"
+      content: "${steps.extract_pdf.data.result}"

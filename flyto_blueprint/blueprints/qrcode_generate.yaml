@@ -1,0 +1,21 @@
+id: qrcode_generate
+name: "Generate QR Code"
+description: "Generate a QR code image from text or URL"
+tags: [qrcode, image, generate, barcode]
+connections:
+  output_field: "data.result"
+args:
+  data:
+    type: string
+    required: true
+    description: "Text or URL to encode in the QR code"
+  output_path:
+    type: string
+    required: false
+    description: "File path to save the QR code image"
+steps:
+  - id: generate_qr
+    module: image.qrcode_generate
+    label: "Generate QR code"
+    params:
+      data: "{{data}}"

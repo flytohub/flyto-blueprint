@@ -1,0 +1,26 @@
+id: slack_notify
+name: "Send Slack Notification"
+description: "Send a notification message to a Slack channel"
+tags: [slack, notification, message, alert, chat]
+connections:
+  output_field: "data.message_id"
+args:
+  webhook_url:
+    type: string
+    required: true
+    description: "Slack incoming webhook URL"
+  text:
+    type: string
+    required: true
+    description: "Message text"
+  channel:
+    type: string
+    required: false
+    description: "Channel override"
+steps:
+  - id: send_slack
+    module: slack.send
+    label: "Send Slack message"
+    params:
+      webhook_url: "{{webhook_url}}"
+      text: "{{text}}"

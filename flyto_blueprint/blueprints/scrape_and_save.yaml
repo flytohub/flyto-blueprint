@@ -34,4 +34,4 @@ steps:
     label: "Save to file"
     params:
       path: "{{output}}"
-      content: "{{extract_content.result}}"
+      content: "${steps.extract_content.data.result}"

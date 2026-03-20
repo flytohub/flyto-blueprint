@@ -1,0 +1,25 @@
+id: llm_chat
+name: "AI Chat"
+description: "Generate text using an AI language model"
+tags: [ai, llm, chat, generate, text, gpt]
+connections:
+  output_field: "data.response"
+args:
+  prompt:
+    type: string
+    required: true
+    description: "User prompt or question"
+  system_prompt:
+    type: string
+    required: false
+    description: "System instructions for the AI"
+  model:
+    type: string
+    required: false
+    description: "Model to use (e.g. gpt-4o-mini)"
+steps:
+  - id: ai_chat
+    module: llm.chat
+    label: "AI chat"
+    params:
+      prompt: "{{prompt}}"

@@ -21,6 +21,7 @@ class Blueprint(BaseModel):
     tags: List[str] = Field(default_factory=list)
     args: Dict[str, BlueprintArg] = Field(default_factory=dict)
     compose: List[str] = Field(default_factory=list)
+    connections: Dict[str, str] = Field(default_factory=dict)
     steps: List[Dict[str, Any]] = Field(default_factory=list)
     source: str = "builtin"
     score: int = 50
