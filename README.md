@@ -55,3 +55,7 @@ engine.report_outcome("my_pattern", success=True)
 ## License
 
 Apache-2.0
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=flytohub/flyto-blueprint&type=Date)](https://star-history.com/#flytohub/flyto-blueprint&Date)
