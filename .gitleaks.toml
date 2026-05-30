@@ -1,0 +1,13 @@
+# gitleaks configuration - FLYA-30 supply-chain baseline.
+#
+# Posture: inherit the full default rule set (fail closed on real secrets).
+# Local triage (gitleaks 8.30.1, 2026-05-30, Platform/FLYA-30) reported
+# 0 findings on both committed history and the working tree for this repo, so
+# this config carries NO allowlist - any real secret will fail the gate.
+# If a future benign fixture trips a rule, hand the finding to SecurityEngineer
+# for triage and a NARROW allowlist (do not blanket-ignore paths).
+
+title = "flyto-blueprint gitleaks config"
+
+[extend]
+useDefault = true
