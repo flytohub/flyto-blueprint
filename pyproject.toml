@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "flyto-blueprint"
 version = "0.2.1"
-description = "Self-evolving workflow pattern engine for Flyto"
+description = "Self-evolving workflow pattern engine for Flyto2"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"

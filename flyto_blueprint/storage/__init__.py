@@ -1,4 +1,4 @@
-# Copyright 2024 Flyto
+# Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 from flyto_blueprint.storage.base import StorageBackend
 from flyto_blueprint.storage.memory import MemoryBackend

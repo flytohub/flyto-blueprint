@@ -1,4 +1,4 @@
-# Copyright 2024 Flyto
+# Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Tests for {{arg}} substitution and type preservation."""
 from flyto_blueprint.template import abstract_params, substitute, substitute_deep

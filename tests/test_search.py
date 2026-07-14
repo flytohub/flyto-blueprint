@@ -1,4 +1,4 @@
-# Copyright 2024 Flyto
+# Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Tests for listing, ranking, relevance, and retired-hidden behavior."""
 from conftest import make_workflow, make_workflow_alt

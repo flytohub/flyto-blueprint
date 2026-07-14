@@ -1,4 +1,4 @@
-# Copyright 2024 Flyto
+# Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """flyto-blueprint — Self-evolving workflow pattern engine."""
 from flyto_blueprint.engine import BlueprintEngine

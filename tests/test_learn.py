@@ -1,4 +1,4 @@
-# Copyright 2024 Flyto
+# Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Tests for learning, dedup, abstraction, and compose detection."""
 from conftest import make_workflow, make_workflow_alt

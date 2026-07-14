@@ -1,4 +1,4 @@
-# Copyright 2024 Flyto
+# Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Tests for +5/-10 scoring, caps, auto-retire, and execution_id dedup."""
 from conftest import make_workflow
