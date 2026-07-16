@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+
+- Prepared a metadata-only PyPI patch release so live registry backlinks and
+  the Flyto2 package description can replace the stale Flyto listing.
+
 ### Added
 
 - Added project memory files, workflow docs, and handoff registry.
