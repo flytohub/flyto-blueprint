@@ -12,7 +12,7 @@ class TestListAndSearch:
         assert "api_get" in ids
 
     def test_learned_sorted_by_score_desc(self, engine):
-        r1 = engine.learn_from_workflow(make_workflow(tag="low_score"), name="low")
+        engine.learn_from_workflow(make_workflow(tag="low_score"), name="low")
         r2 = engine.learn_from_workflow(make_workflow_alt(), name="high")
         engine._blueprints[r2["data"]["id"]]["score"] = 90
 

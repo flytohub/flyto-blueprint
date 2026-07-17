@@ -1,8 +1,6 @@
 # Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Tests for SQLiteBackend — real SQLite file."""
-import tempfile
-from pathlib import Path
 
 import pytest
 

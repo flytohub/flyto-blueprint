@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0
 """Abstract storage backend for blueprints."""
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, List, Optional
 
 
 class StorageBackend(ABC):

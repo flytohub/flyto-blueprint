@@ -11,6 +11,10 @@ Blueprints turn repeated browser automation, API integration, data processing,
 PDF/OCR, notification, monitoring, and AI-agent tasks into reusable YAML
 patterns instead of one-off generated scripts.
 
+In plain English: when an agent has solved the same kind of job before, it
+should not ask the model to invent the workflow again. Flyto2 Blueprint lets the
+agent reuse a known pattern, fill the missing arguments, and learn from the run.
+
 AI agents use Flyto2 Blueprint to select a proven workflow pattern, fill in
 validated arguments, learn from successful runs, deduplicate similar patterns,
 and retire stale automations. This is the open-source blueprint layer used by
@@ -21,6 +25,13 @@ Official links: [flyto2.com](https://flyto2.com) ·
 [PyPI](https://pypi.org/project/flyto-blueprint/) ·
 [flyto-core](https://github.com/flytohub/flyto-core) ·
 [flyto-ai](https://github.com/flytohub/flyto-ai)
+
+Good fit if you searched for:
+
+- reusable AI workflow patterns
+- workflow automation blueprint engine
+- self-learning automation recipes
+- YAML workflow templates for AI agents
 
 ## Install
 

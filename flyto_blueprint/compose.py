@@ -146,7 +146,7 @@ def compose_chain(
         edges = copy.deepcopy(data.get("edges", []))
 
         # Deconflict step IDs
-        id_map = _deconflict_step_ids(steps, edges, seen_step_ids, idx)
+        _deconflict_step_ids(steps, edges, seen_step_ids, idx)
 
         # Collect arg names for this blueprint
         all_declared_args = set(bp.get("args", {}).keys())
