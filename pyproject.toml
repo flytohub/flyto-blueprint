@@ -9,6 +9,14 @@ description = "Self-evolving workflow pattern engine for Flyto2"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
+keywords = [
+    "ai-workflow-automation",
+    "workflow-blueprints",
+    "agentic-automation",
+    "workflow-patterns",
+    "yaml-recipes",
+    "flyto2",
+]
 dependencies = [
     "pyyaml>=6.0",
     "pydantic>=2.4.0",
@@ -24,6 +32,10 @@ Homepage = "https://flyto2.com"
 Documentation = "https://docs.flyto2.com"
 Repository = "https://github.com/flytohub/flyto-blueprint"
 Issues = "https://github.com/flytohub/flyto-blueprint/issues"
+Changelog = "https://github.com/flytohub/flyto-blueprint/blob/main/CHANGELOG.md"
+Security = "https://github.com/flytohub/flyto-blueprint/blob/main/SECURITY.md"
+Blog = "https://blog.flyto2.com/posts/ai-workflow-automation-alternatives"
+Examples = "https://docs.flyto2.com/blueprint/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["flyto_blueprint"]
