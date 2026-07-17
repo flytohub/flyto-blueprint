@@ -1,4 +1,4 @@
-# flyto-blueprint
+# Flyto2 Blueprint
 
 [![PyPI](https://img.shields.io/pypi/v/flyto-blueprint.svg)](https://pypi.org/project/flyto-blueprint/)
 [![Python](https://img.shields.io/pypi/pyversions/flyto-blueprint.svg)](https://pypi.org/project/flyto-blueprint/)
@@ -7,13 +7,38 @@
 [![Docs](https://img.shields.io/badge/docs-docs.flyto2.com-06B6D4)](https://docs.flyto2.com)
 
 Self-evolving workflow pattern engine for [Flyto2](https://flyto2.com).
+Blueprints turn repeated browser automation, API integration, data processing,
+PDF/OCR, notification, monitoring, and AI-agent tasks into reusable YAML
+patterns instead of one-off generated scripts.
 
-Blueprints are pre-built workflow patterns (YAML) that encode domain knowledge. The AI selects a blueprint and fills in arguments instead of building workflows from scratch. Learned blueprints are scored, deduplicated, and auto-retired.
+AI agents use Flyto2 Blueprint to select a proven workflow pattern, fill in
+validated arguments, learn from successful runs, deduplicate similar patterns,
+and retire stale automations. This is the open-source blueprint layer used by
+Flyto2 Core, Flyto2 AI, and Flyto2 Cloud.
+
+Official links: [flyto2.com](https://flyto2.com) ·
+[Docs](https://docs.flyto2.com/blueprint/) ·
+[PyPI](https://pypi.org/project/flyto-blueprint/) ·
+[flyto-core](https://github.com/flytohub/flyto-core) ·
+[flyto-ai](https://github.com/flytohub/flyto-ai)
 
 ## Install
 
 ```bash
 pip install flyto-blueprint
+```
+
+## Try it in 60 seconds
+
+```python
+from flyto_blueprint import BlueprintEngine, MemoryBackend
+
+engine = BlueprintEngine(storage=MemoryBackend())
+result = engine.expand("browser_scrape", {
+    "url": "https://example.com",
+    "extract_selector": "h1",
+})
+print(result.workflow["steps"])
 ```
 
 ## What's New in v0.2.0
@@ -46,11 +71,34 @@ engine.learn_from_workflow(workflow_dict, name="My Pattern", tags=["browser"])
 engine.report_outcome("my_pattern", success=True)
 ```
 
+## Usage
+
+Use Flyto2 Blueprint when an AI agent should reuse a known workflow shape
+instead of generating a brand-new sequence every time. Typical use cases:
+
+- Browser scrape, screenshot, and form-fill recipes.
+- API integration workflows with typed arguments.
+- PDF, OCR, image manipulation, and notification patterns.
+- Learned workflow reuse for teams that run similar automations repeatedly.
+
 ## Storage Backends
 
 - **MemoryBackend** — In-memory, great for tests
 - **SQLiteBackend** — File-based persistence (default)
 - **FirestoreBackend** — Google Firestore (for flyto-cloud)
+
+## Testing
+
+```bash
+python -m pytest
+python -m ruff check .
+```
+
+## Contributing
+
+Open an issue or pull request for new blueprint categories, scoring behavior,
+storage backends, docs, or examples. Security reports should go to
+`security@flyto2.com`.
 
 ## License
 
