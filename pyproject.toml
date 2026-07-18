@@ -25,7 +25,7 @@ dependencies = [
 [project.optional-dependencies]
 core = ["flyto-core>=2.12.0"]
 firestore = ["google-cloud-firestore", "firebase-admin"]
-dev = ["pytest>=9.0.3", "pytest-asyncio>=0.21"]
+dev = ["pytest>=9.0.3", "pytest-asyncio>=1.4.0"]
 
 [project.urls]
 Homepage = "https://flyto2.com"
