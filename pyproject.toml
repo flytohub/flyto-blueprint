@@ -19,7 +19,7 @@ keywords = [
 ]
 dependencies = [
     "pyyaml>=6.0",
-    "pydantic>=2.4.0",
+    "pydantic>=2.13.4",
 ]
 
 [project.optional-dependencies]
