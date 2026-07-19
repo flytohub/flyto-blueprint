@@ -17,6 +17,10 @@ Rules:
 - Preserve `flyto-core` boundaries and product-line ownership.
 - Add tests, guards, docs, or handoff notes for release-impacting changes.
 
+## Flyto-indexer Verification
+
+Before modifying code, public copy, CI, or release-impacting docs, use flyto-indexer `search` to find the relevant files and `impact` or `task(action='plan')` to understand the blast radius. After the change, run `flyto-index verify . --full-scan --json` or the repository verification command and record any remaining warnings in the handoff or PR notes.
+
 ## Flyto2 Project Memory Contract
 
 Every Flyto2 repository must keep this project-memory scaffold current:
