@@ -11,7 +11,15 @@
     "security": "SECURITY.md",
     "changelog": "CHANGELOG.md",
     "feature_reference": "docs/FEATURES.md",
-    "whitepaper": "docs/WHITEPAPER.md"
+    "whitepaper": "docs/WHITEPAPER.md",
+    "source_reference": "docs/reference/python-api.md",
+    "source_reference_exclude": [
+      "scripts/**",
+      "tests/**"
+    ],
+    "module_roots": [
+      "flyto_blueprint"
+    ]
   },
   "source_areas": [
     {

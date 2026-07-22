@@ -92,6 +92,26 @@ instead of generating a brand-new sequence every time. Typical use cases:
 - PDF, OCR, image manipulation, and notification patterns.
 - Learned workflow reuse for teams that run similar automations repeatedly.
 
+## API
+
+The package facade, engine lifecycle, storage protocol, scoring behavior, and
+complete declaration inventory are documented in [API](docs/API.md) and the
+[generated Python reference](docs/reference/python-api.md). MCP consumers should
+use the [generated tool reference](docs/reference/mcp-tools.md).
+
+## Architecture
+
+[Architecture](ARCHITECTURE.md) explains discovery, expansion, persistence,
+learning, and trust boundaries. [Features](docs/FEATURES.md) maps each behavior
+to its implementation and tests; [the whitepaper](docs/WHITEPAPER.md) explains
+the design rationale and limits.
+
+## Configuration
+
+The library has no mandatory remote service. Storage-specific credentials and
+runtime settings belong to the selected backend and deployment secret store;
+never place them in blueprint YAML or committed examples.
+
 ## Storage Backends
 
 - **MemoryBackend** — In-memory, great for tests
