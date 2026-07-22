@@ -1,16 +1,16 @@
-# Contributing
+# Contributing To Flyto2 Blueprint
 
-Read `PROJECT.md`, `ARCHITECTURE.md`, `STATE.md`, and `DECISIONS.md` before
-changing blueprint matching, storage backends, packaging, or public docs.
-
-Use flyto-indexer `search` and `impact` or `task(action='plan')` before editing.
-Before opening a PR, run:
+Install the development dependencies from the repository root:
 
 ```bash
-python -m pytest
-python -m ruff check .
-python -m build
-flyto-index verify . --full-scan --json
+python -m pip install -e '.[dev]'
+pytest
 ```
 
-Security issues go to `security@flyto2.com`.
+Changes to a packaged blueprint need expansion coverage. Changes to learning,
+scoring, fingerprinting, or storage need focused tests for deterministic output
+and duplicate handling. Public API changes must update `docs/API.md`,
+`docs/FEATURES.md`, the documentation manifest, and the changelog.
+
+Do not commit workflow credentials, customer data, learned production patterns,
+Firestore service accounts, or generated local databases.

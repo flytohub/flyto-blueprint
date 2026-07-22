@@ -9,4 +9,8 @@
 
 ### Added
 
+- Added feature and stable Python API guides plus a source-backed reference for
+  all package declarations, packaged blueprints, composition blocks, and MCP
+  input schemas.
+- Added a machine-readable documentation contract and CI drift gate.
 - Added project memory files, workflow docs, and handoff registry.

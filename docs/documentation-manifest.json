@@ -1,0 +1,119 @@
+{
+  "$schema": "https://docs.flyto2.com/schemas/documentation-contract-v1.json",
+  "schema_version": 1,
+  "repository": "flyto-blueprint",
+  "status": "active",
+  "audiences": ["Python integrators", "workflow authors", "agent developers", "maintainers"],
+  "documentation": {
+    "index": "docs/README.md",
+    "architecture": "ARCHITECTURE.md",
+    "state": "STATE.md",
+    "security": "SECURITY.md",
+    "changelog": "CHANGELOG.md",
+    "feature_reference": "docs/FEATURES.md"
+  },
+  "source_areas": [
+    {
+      "id": "engine-api",
+      "description": "Stable package exports and orchestration API for loading, searching, expanding, learning, and outcome reporting.",
+      "paths": ["flyto_blueprint/__init__.py", "flyto_blueprint/engine.py", "flyto_blueprint/models.py"],
+      "documentation": ["docs/API.md", "docs/FEATURES.md"]
+    },
+    {
+      "id": "blueprint-processing",
+      "description": "Deterministic loading, search, intent matching, template substitution, composition, validation, fingerprinting, learning, and scoring.",
+      "paths": ["flyto_blueprint/loader.py", "flyto_blueprint/search.py", "flyto_blueprint/intent.py", "flyto_blueprint/template.py", "flyto_blueprint/compose.py", "flyto_blueprint/validate.py", "flyto_blueprint/fingerprint.py", "flyto_blueprint/learn.py", "flyto_blueprint/scoring.py"],
+      "documentation": ["docs/FEATURES.md#search-and-intent-matching", "docs/FEATURES.md#expansion-and-composition", "docs/FEATURES.md#workflow-learning", "docs/FEATURES.md#outcome-scoring"]
+    },
+    {
+      "id": "storage",
+      "description": "Abstract persistence contract and memory, SQLite, and Firestore implementations for learned blueprint state.",
+      "paths": ["flyto_blueprint/storage/**"],
+      "documentation": ["docs/API.md#storage-api", "docs/FEATURES.md#storage-backends"]
+    },
+    {
+      "id": "catalog-and-tools",
+      "description": "Packaged YAML blueprint resources, composition blocks, and MCP-compatible tool schema definitions.",
+      "paths": ["flyto_blueprint/blueprints/**", "flyto_blueprint/tools.py"],
+      "documentation": ["docs/FEATURES.md#packaged-blueprint-catalog", "docs/API.md#mcp-tool-definitions", "docs/reference/blueprint-catalog.md", "docs/reference/mcp-tools.md"]
+    },
+    {
+      "id": "reference-automation",
+      "description": "Source-backed generation for implementation declarations, packaged catalog entries, and MCP input schemas.",
+      "paths": ["scripts/generate-reference.py"],
+      "documentation": ["docs/reference/README.md", "docs/reference/python-api.md", "docs/reference/blueprint-catalog.md", "docs/reference/mcp-tools.md"]
+    }
+  ],
+  "feature_surfaces": [
+    {
+      "id": "catalog",
+      "title": "Packaged blueprint catalog",
+      "kind": "content",
+      "status": "active",
+      "description": "Loads packaged workflow patterns and reusable blocks for browser, API, data, file, image, document, monitoring, and notification work.",
+      "source": ["flyto_blueprint/blueprints/**", "flyto_blueprint/loader.py"],
+      "documentation": ["docs/FEATURES.md#packaged-blueprint-catalog", "README.md#quick-start"],
+      "tests": ["tests/test_expand.py", "tests/test_integration.py"]
+    },
+    {
+      "id": "search-intent",
+      "title": "Search and intent matching",
+      "kind": "library",
+      "status": "active",
+      "description": "Ranks deterministic text matches and optionally combines expanded queries, embeddings, and tracked intent signals.",
+      "source": ["flyto_blueprint/search.py", "flyto_blueprint/intent.py"],
+      "documentation": ["docs/FEATURES.md#search-and-intent-matching", "docs/API.md#blueprintengine"],
+      "tests": ["tests/test_search.py"]
+    },
+    {
+      "id": "expansion-composition",
+      "title": "Expansion and composition",
+      "kind": "library",
+      "status": "active",
+      "description": "Substitutes arguments, expands blocks, chains patterns, rewrites step references, and validates generated workflow steps.",
+      "source": ["flyto_blueprint/template.py", "flyto_blueprint/compose.py", "flyto_blueprint/validate.py"],
+      "documentation": ["docs/FEATURES.md#expansion-and-composition", "docs/API.md#expandblueprint_id-args"],
+      "tests": ["tests/test_expand.py", "tests/test_template.py", "tests/test_integration.py"]
+    },
+    {
+      "id": "learning-scoring",
+      "title": "Workflow learning and scoring",
+      "kind": "library",
+      "status": "active",
+      "description": "Fingerprints successful workflows, abstracts reusable parameters, deduplicates patterns, and updates outcome-based scores.",
+      "source": ["flyto_blueprint/learn.py", "flyto_blueprint/fingerprint.py", "flyto_blueprint/scoring.py", "flyto_blueprint/engine.py"],
+      "documentation": ["docs/FEATURES.md#workflow-learning", "docs/FEATURES.md#outcome-scoring", "docs/API.md#learn_from_workflow"],
+      "tests": ["tests/test_learn.py", "tests/test_fingerprint.py", "tests/test_scoring.py"]
+    },
+    {
+      "id": "storage-backends",
+      "title": "Storage backends",
+      "kind": "library",
+      "status": "active",
+      "description": "Persists learned blueprint records through a common contract with memory, SQLite, and Firestore implementations.",
+      "source": ["flyto_blueprint/storage/**"],
+      "documentation": ["docs/API.md#storage-api", "docs/FEATURES.md#storage-backends"],
+      "tests": ["tests/test_storage_memory.py", "tests/test_storage_sqlite.py"]
+    },
+    {
+      "id": "mcp-tools",
+      "title": "MCP tool definitions",
+      "kind": "api",
+      "status": "active",
+      "description": "Publishes JSON Schema tool definitions for blueprint discovery, expansion, learning, and outcome reporting to an embedding host.",
+      "source": ["flyto_blueprint/tools.py"],
+      "documentation": ["docs/API.md#mcp-tool-definitions", "docs/FEATURES.md#mcp-integration"],
+      "tests": ["tests/test_integration.py"]
+    },
+    {
+      "id": "source-backed-reference",
+      "title": "Source-backed implementation reference",
+      "kind": "content",
+      "status": "generated",
+      "description": "Generates a complete declaration inventory, packaged blueprint catalog, and MCP schema reference and rejects drift in CI.",
+      "source": ["scripts/generate-reference.py"],
+      "documentation": ["docs/README.md", "docs/reference/README.md"],
+      "verification": ["python3 scripts/generate-reference.py --check"]
+    }
+  ]
+}

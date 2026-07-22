@@ -1,14 +1,28 @@
-# Documentation Index
+# Flyto2 Blueprint Documentation
 
-This directory holds durable documentation for `flyto-blueprint`.
+## Integrator Docs
 
-Start with these root memory files:
+- [Feature reference](FEATURES.md) explains catalog, search, composition,
+  learning, scoring, storage, and MCP behavior.
+- [Python API](API.md) defines supported exports, methods, return shapes, side
+  effects, and storage contracts.
+- [Generated reference](reference/README.md) inventories every implementation
+  declaration, packaged blueprint, composition block, and MCP input schema.
+- [README](../README.md) provides installation and first-use examples.
+- [Hosted Blueprint docs](https://docs.flyto2.com/blueprint/) provide the
+  public task-oriented guide.
 
-- `../PROJECT.md`
-- `../ARCHITECTURE.md`
-- `../STATE.md`
-- `../ROADMAP.md`
-- `../DECISIONS.md`
-- `../tasks.md`
+## Maintainer Docs
 
-Frontend or public-surface documentation must follow the Flyto2 Frontend Quality Gate in `../AGENTS.md`.
+- [Architecture](../ARCHITECTURE.md)
+- [Current state](../STATE.md)
+- [Roadmap](../ROADMAP.md)
+- [Decisions](../DECISIONS.md)
+- [Tasks](../tasks.md)
+- [Security](../SECURITY.md)
+- [Changelog](../CHANGELOG.md)
+
+The Python API is authoritative for supported package behavior. The generated
+reference is exhaustive maintainer evidence but does not expand the stable API
+boundary. Hosted docs may explain the same workflows at a higher level but must
+not invent additional methods.
