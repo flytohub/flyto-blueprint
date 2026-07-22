@@ -2,6 +2,8 @@
 
 ## Integrator Docs
 
+- [Whitepaper](WHITEPAPER.md) explains deterministic expansion, learning,
+  storage, trust, and execution boundaries.
 - [Feature reference](FEATURES.md) explains catalog, search, composition,
   learning, scoring, storage, and MCP behavior.
 - [Python API](API.md) defines supported exports, methods, return shapes, side
