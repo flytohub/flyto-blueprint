@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]" build ruff "flyto-indexer @ git+https://github.com/flytohub/flyto-indexer@7ad6917887ffde8e43a3cee029c849a1a0ba2909"
+          python -m pip install -e ".[dev]" build ruff "flyto-indexer @ git+https://github.com/flytohub/flyto-indexer@1b624987b15ef7cd2361370478d07ea36e5aa5ee"
 
       - name: Lint
         run: ruff check .
