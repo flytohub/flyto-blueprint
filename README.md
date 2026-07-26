@@ -51,7 +51,7 @@ print(result["data"]["steps"])
 
 ## How this differs from a typical AI agent
 
-| | Typical AI agent | Flyto + Blueprint |
+| | Typical AI agent | Flyto2 AI + Blueprint |
 |---|---|---|
 | Repeated job | Ask the model to reason again | Reuse the verified workflow |
 | “It works” | Often based on the model's answer | Based on execution outcomes and assertions |
@@ -61,7 +61,7 @@ print(result["data"]["steps"])
 | Bad patterns | May keep getting suggested | Failures lower trusted scores and can retire the pattern |
 
 The token claim is deliberately narrow: Blueprint records
-`planner_model_calls_used=0` when Flyto-AI takes the deterministic exact-reuse
+`planner_model_calls_used=0` when Flyto2 AI takes the deterministic exact-reuse
 path. That proves the outer agent did not ask a model to plan the job again. It
 does **not** prove that a Blueprint containing an `llm.*` step used zero tokens.
 Workflow-wide token use stays unknown until every model-backed step reports it.

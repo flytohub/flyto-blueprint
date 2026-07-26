@@ -7,7 +7,7 @@ Blueprint keeps the useful part of a successful run—the parameterized workflow
 and its execution evidence—so the next run can be cheaper, faster, and easier
 to inspect.
 
-| Question | Model-first agent | Flyto + Blueprint |
+| Question | Model-first agent | Flyto2 AI + Blueprint |
 |---|---|---|
 | Who plans a repeated job? | The model, again | The saved workflow |
 | What counts as proof? | A plausible response | Trusted outcome, step execution, assertions |
