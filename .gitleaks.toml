@@ -1,3 +1,13 @@
+# gitleaks configuration - FLYA-30 supply-chain baseline.
+#
+# Posture: inherit the full default rule set (fail closed on real secrets).
+# Local triage originally reported 0 findings on both committed history and the
+# working tree. Blueprint sharing tests now use one deterministic fake signing
+# key, allowed below by exact value rather than by rule or path.
+# Keep future exceptions narrow; do not blanket-ignore paths.
+
+title = "flyto-blueprint gitleaks config"
+
 [extend]
 useDefault = true
 
