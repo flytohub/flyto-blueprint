@@ -6,19 +6,73 @@
 [![Website](https://img.shields.io/badge/website-flyto2.com-8B5CF6)](https://flyto2.com)
 [![Docs](https://img.shields.io/badge/docs-docs.flyto2.com-06B6D4)](https://docs.flyto2.com)
 
-Self-evolving workflow pattern engine for [Flyto2](https://flyto2.com).
-Blueprints turn repeated browser automation, API integration, data processing,
-PDF/OCR, notification, monitoring, and AI-agent tasks into reusable YAML
-patterns instead of one-off generated scripts.
+<p align="center">
+  <strong>Most agent memory stores what was said. Blueprint stores what actually worked.</strong>
+</p>
 
-In plain English: when an agent has solved the same kind of job before, it
-should not ask the model to invent the workflow again. Flyto2 Blueprint lets the
-agent reuse a known pattern, fill the missing arguments, and learn from the run.
+Flyto2 Blueprint is procedure memory for AI agents. It turns a successful
+execution into a parameterized workflow that can be searched, run again, and
+judged by its real history.
 
-AI agents use Flyto2 Blueprint to select a proven workflow pattern, fill in
-validated arguments, learn from successful runs, deduplicate similar patterns,
-and retire stale automations. This is the open-source blueprint layer used by
-Flyto2 Core, Flyto2 AI, and Flyto2 Cloud.
+```text
+successful execution
+        ↓
+parameterize what changes
+        ↓
+save steps + retries + assertions + compatibility
+        ↓
+reuse with new arguments
+        ↓
+record the outcome in an Evidence Card
+```
+
+It is closer to turning a good agent run into a tested function than adding
+another chat-history or vector-memory layer.
+
+Blueprint does not train model weights. It makes a verified procedure
+executable again.
+
+## Installation and first run
+
+```bash
+pip install flyto-blueprint
+```
+
+```python
+from flyto_blueprint import BlueprintEngine, MemoryBackend
+
+engine = BlueprintEngine(storage=MemoryBackend())
+result = engine.expand("browser_scrape", {
+    "url": "https://example.com",
+    "extract_selector": "h1",
+})
+print(result["data"]["steps"])
+```
+
+## How this differs from a typical AI agent
+
+| | Typical AI agent | Flyto + Blueprint |
+|---|---|---|
+| Repeated job | Ask the model to reason again | Reuse the verified workflow |
+| “It works” | Often based on the model's answer | Based on execution outcomes and assertions |
+| Token use | Grows again on each model-planned run | Exact reuse can skip the agent's planning call |
+| Learning | Often stays in one chat | Becomes a parameterized, searchable Blueprint |
+| Shared knowledge | Easy to trust too quickly | Imported bundles start quarantined unless the host verifies them |
+| Bad patterns | May keep getting suggested | Failures lower trusted scores and can retire the pattern |
+
+The token claim is deliberately narrow: Blueprint records
+`planner_model_calls_used=0` when Flyto-AI takes the deterministic exact-reuse
+path. That proves the outer agent did not ask a model to plan the job again. It
+does **not** prove that a Blueprint containing an `llm.*` step used zero tokens.
+Workflow-wide token use stays unknown until every model-backed step reports it.
+
+## Proof, not vibes
+
+Every Blueprint summary includes an Evidence Card. It shows the number of
+trusted outcomes, observed success rate, Wilson 95% lower bound, retries,
+assertion pass rate, p50/p95 duration, and measured zero-planner-call reuse. Detailed
+samples keep only an allowlist of execution facts and are capped to the latest
+100 entries; prompts, parameters, API keys, and raw results are not accepted.
 
 Official links: [flyto2.com](https://flyto2.com) ·
 [Docs](https://docs.flyto2.com/blueprint/) ·
@@ -33,33 +87,16 @@ Good fit if you searched for:
 - self-learning automation recipes
 - YAML workflow templates for AI agents
 
-## Install
+## What it already does
 
-```bash
-pip install flyto-blueprint
-```
+- 33 built-in browser, API, data, image, notification, monitoring, PDF, and OCR patterns.
+- Synonym-expanded search, so “grab” can find “scrape.”
+- Repository/runtime compatibility, so similar-looking workflows do not get
+  mixed across incompatible projects.
+- Retry and assertion contracts that survive learning and expansion.
+- Evidence Cards that expose reliability and zero-planner-call reuse.
 
-## Try it in 60 seconds
-
-```python
-from flyto_blueprint import BlueprintEngine, MemoryBackend
-
-engine = BlueprintEngine(storage=MemoryBackend())
-result = engine.expand("browser_scrape", {
-    "url": "https://example.com",
-    "extract_selector": "h1",
-})
-print(result.workflow["steps"])
-```
-
-## What's New in v0.2.0
-
-- **33 builtin blueprints** (up from 10) — covering browser automation, API calls, data processing, image manipulation, notification, monitoring, PDF, and OCR workflows
-- **Synonym-expanded search** — blueprint matching now expands synonyms and uses word-level scoring for more accurate results (e.g., "grab" matches "scrape", "picture" matches "screenshot")
-- **Intent matcher** — dynamically derives `context_key` values for the credential vault, so blueprints can auto-fill site-specific credentials without hardcoded mappings
-- **Query tracker** — records query-to-blueprint mappings after successful executions, enabling learning and analytics over time
-
-## Quick Start
+## Learn, measure, and share
 
 ```python
 from flyto_blueprint import BlueprintEngine, MemoryBackend
@@ -78,9 +115,30 @@ result = engine.expand("browser_scrape", {
 # Learn from a successful workflow
 engine.learn_from_workflow(workflow_dict, name="My Pattern", tags=["browser"])
 
-# Report outcomes to evolve scores
-engine.report_outcome("my_pattern", success=True)
+# Report a trusted runtime outcome with measured facts
+engine.report_outcome(
+    "my_pattern",
+    success=True,
+    execution_id="run-123",
+    evidence={
+        "duration_ms": 842,
+        "step_count": 3,
+        "total_attempts": 3,
+        "assertion_passed": True,
+        "selection_mode": "deterministic",
+        "planner_model_calls_used": 0,
+        "model_call_scope": "planner",
+    },
+)
+
+# Share explicitly; the library never uploads on its own
+bundle = engine.export_blueprint("my_pattern", publisher="my-team")
+engine.import_blueprint(bundle["data"])
 ```
+
+Unsigned or unknown-publisher imports are quarantined as `community`. A host
+may sign exports and configure trusted publisher keys through the Python API;
+signing keys are intentionally unavailable to model-facing tools.
 
 ## Usage
 

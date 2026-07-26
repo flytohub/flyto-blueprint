@@ -63,6 +63,12 @@ def expand_blueprint(bp: dict, args: dict, blocks: Dict[str, dict]) -> dict:
         if "params" in step:
             expanded_step["params"] = substitute_deep(step["params"], args)
 
+        # Keep runtime guarantees attached to learned/authored steps. Assertion
+        # values may contain blueprint arguments, so expand them like params.
+        for field in ("retry", "assert", "assertions"):
+            if field in step:
+                expanded_step[field] = substitute_deep(step[field], args)
+
         expanded_steps.append(expanded_step)
 
     # Generate sequential edges
