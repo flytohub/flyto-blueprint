@@ -94,3 +94,33 @@ class TestExpand:
         })
         assert r["ok"] is True
         assert r["data"].get("source_blueprint_id") == "src_bp_test"
+
+    def test_learned_execution_contract_survives_expansion(self, engine):
+        from conftest import make_workflow
+
+        workflow = make_workflow(tag="expanded_contract")
+        workflow["steps"][0]["retry"] = {"count": 1, "delay_ms": 0}
+        workflow["steps"][1]["assertions"] = [{
+            "path": "data.result",
+            "op": "truthy",
+        }]
+        learned = engine.learn_from_workflow(
+            workflow,
+            name="expanded_contract",
+        )
+        blueprint_id = learned["data"]["id"]
+
+        result = engine.expand(blueprint_id, {
+            "a": 1,
+            "b": 2,
+            "text": "hello",
+            "array": [3, 2, 1],
+            "tag": "expanded_contract",
+        })
+
+        assert result["ok"] is True
+        assert result["data"]["steps"][0]["retry"] == {
+            "count": 1,
+            "delay_ms": 0,
+        }
+        assert result["data"]["steps"][1]["assertions"][0]["op"] == "truthy"

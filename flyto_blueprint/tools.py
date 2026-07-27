@@ -90,8 +90,53 @@ REPORT_OUTCOME_TOOL = {
                 "type": "boolean",
                 "description": "True if the workflow succeeded, false if it failed",
             },
+            "execution_id": {
+                "type": "string",
+                "description": "Stable execution ID used to deduplicate outcome reports",
+            },
         },
         "required": ["blueprint_id", "success"],
+    },
+}
+
+EXPORT_BLUEPRINT_TOOL = {
+    "name": "export_blueprint",
+    "description": (
+        "Create an integrity-checked portable bundle for an existing Blueprint. "
+        "This does not upload or publish anything. Host-controlled signing keys "
+        "are never accepted through the model-facing tool."
+    ),
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "blueprint_id": {
+                "type": "string",
+                "description": "Blueprint ID to export",
+            },
+            "publisher": {
+                "type": "string",
+                "description": "Optional publisher label included as an untrusted claim",
+            },
+        },
+        "required": ["blueprint_id"],
+    },
+}
+
+IMPORT_BLUEPRINT_TOOL = {
+    "name": "import_blueprint",
+    "description": (
+        "Validate and import a portable Blueprint bundle. Unsigned or unknown "
+        "publishers are quarantined as community trust; the host owns trusted keys."
+    ),
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "bundle": {
+                "type": "object",
+                "description": "Portable bundle returned by export_blueprint",
+            },
+        },
+        "required": ["bundle"],
     },
 }
 
@@ -103,4 +148,6 @@ def get_blueprint_tools() -> List[dict]:
         USE_BLUEPRINT_TOOL,
         SAVE_BLUEPRINT_TOOL,
         REPORT_OUTCOME_TOOL,
+        EXPORT_BLUEPRINT_TOOL,
+        IMPORT_BLUEPRINT_TOOL,
     ]

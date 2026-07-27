@@ -63,24 +63,94 @@ engine.learn_from_workflow(
     name=None,
     tags=None,
     verified=False,
+    compatibility=None,
+    verification=None,
+    trust_tier=None,
 )
 ```
 
 Abstracts concrete workflow values into reusable arguments, fingerprints the
 structure, boosts an existing match when deduplicated, and persists a new
-blueprint when storage is configured.
+blueprint when storage is configured. `compatibility` scopes structurally
+identical patterns to a repository, framework, runtime, or environment;
+`verification` stores non-secret evidence metadata.
 
-### `learn_from_execution(workflow, name=None, tags=None)`
+### `learn_from_execution(...)`
 
 Convenience method for a successful execution. It delegates to
 `learn_from_workflow(..., verified=True)` and starts the learned pattern with a
-verified score.
+`local_verified` trust tier.
 
-### `report_outcome(blueprint_id, success, execution_id="")`
+### `report_outcome(...)`
 
-Records success or failure, updates score counters, and deduplicates recent
-reports when an execution identifier is supplied. The method returns a result
-object describing whether the report was accepted.
+```python
+engine.report_outcome(
+    blueprint_id,
+    success,
+    execution_id="",
+    evidence_tier="local_verified",
+    evidence=None,
+)
+```
+
+Trusted evidence (`local_verified`, `ci_verified`, or `official`) updates the
+primary score. `community` evidence requires an execution identifier and
+updates separate Bayesian counters; it can influence ranking within a bounded
+confidence cap but cannot rewrite the trusted score. Recent execution
+identifiers are deduplicated.
+
+For trusted runtime reports, `evidence` may contain only these measured facts:
+
+| Field | Meaning |
+|---|---|
+| `duration_ms` | Closed-loop wall-clock duration. |
+| `step_count` | Number of workflow steps. |
+| `total_attempts` | Execution attempts including retries. |
+| `assertion_passed` | Whether the run's assertions passed. |
+| `planner_model_calls_used` | Model calls used by the outer agent to plan this reuse path. |
+| `model_calls_used` | Deprecated compatibility alias; not workflow-wide token use. |
+| `model_call_scope` | Must be `planner` before legacy model-call evidence is treated as planner-scoped. |
+| `selection_mode` | For example, `deterministic` or `model_selected`. |
+| `workflow_hash` | SHA-256 workflow identity. |
+| `executor_version` | Runtime evidence producer version. |
+
+Unknown fields are discarded. The raw execution identifier is not stored in
+the detailed sample; only its SHA-256 reference is retained. Community reports
+cannot add detailed samples.
+
+The response and list/search summaries include `evidence_card`. Its
+`sample_count`, success rate, and Wilson 95% lower bound use trusted outcome
+counters. Retry, assertion, duration, and model-call statistics use the latest
+100 detailed samples. `zero_planner_model_call_count` means the host measured
+`planner_model_calls_used=0`: the agent skipped re-planning. It says nothing
+about model-backed workflow steps. `zero_llm_reuse_count` and
+`zero_llm_reuse_rate` remain deprecated compatibility aliases and must not be
+read as workflow-wide token totals.
+
+### `export_blueprint(...)`
+
+```python
+engine.export_blueprint(
+    blueprint_id,
+    publisher="",
+    claimed_tier=None,
+    evidence=None,
+    signing_key=None,
+)
+```
+
+Returns an integrity-checked portable bundle and never uploads it. Export
+rejects non-parameterized sensitive values in steps, compatibility metadata,
+or verification evidence. Signing requires a publisher and a host-controlled
+key of at least 16 bytes.
+
+### `import_blueprint(bundle, trusted_keys=None)`
+
+Validates format, digest, definition, and optional publisher signature before
+persisting. Unsigned bundles, invalid signatures, and unknown publishers are
+quarantined as `community`. Only a signature verified with a key in the
+host-owned `trusted_keys` mapping preserves a higher claimed tier. Imported
+usage and outcome counters always start fresh.
 
 ## Storage API
 
@@ -108,7 +178,8 @@ package root exports only `MemoryBackend` and the abstract contract.
 
 - `BlueprintArg` describes one typed, optionally required blueprint argument.
 - `Blueprint` is the complete persisted pattern including steps, composition,
-  score counters, fingerprint, lifecycle, and source metadata.
+  score counters, detailed evidence samples, fingerprint, lifecycle, and
+  source metadata.
 - `BlueprintSummary` is the reduced list/search representation.
 
 The engine accepts dictionaries at its boundary for direct compatibility with
@@ -124,10 +195,14 @@ for:
 - `use_blueprint`
 - `save_as_blueprint`
 - `report_blueprint_outcome`
+- `export_blueprint`
+- `import_blueprint`
 
 These are tool definitions only. The host application binds them to engine
 methods and remains responsible for authentication, tenant isolation,
-authorization, and execution evidence.
+authorization, execution evidence, signing keys, trusted publisher keys, and
+transport. The model-facing export/import schemas cannot sign a bundle or
+configure trust.
 
 ## Errors And Side Effects
 

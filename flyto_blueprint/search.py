@@ -1,7 +1,10 @@
 # Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Blueprint listing and search with relevance+quality blending + synonym expansion."""
+import json
 from typing import Dict, List
+
+from flyto_blueprint.scoring import effective_quality_score, evidence_card
 
 
 def bp_summary(bp: dict) -> dict:
@@ -23,7 +26,19 @@ def bp_summary(bp: dict) -> dict:
     if bp.get("_source") == "learned":
         summary["source"] = "learned"
         summary["score"] = max(0, min(100, bp.get("score", 50)))
+        summary["effective_score"] = effective_quality_score(bp)
+        summary["trust_tier"] = bp.get("trust_tier", "community")
         summary["use_count"] = bp.get("use_count", 0)
+        community_successes = bp.get("community_success_count", 0)
+        community_failures = bp.get("community_fail_count", 0)
+        summary["community_observations"] = community_successes + community_failures
+        summary["community_success_rate"] = bp.get("community_success_rate")
+        summary["evidence_card"] = evidence_card(bp)
+        if bp.get("compatibility"):
+            summary["compatibility"] = bp["compatibility"]
+    else:
+        summary["trust_tier"] = "official"
+        summary["evidence_card"] = evidence_card(bp)
     return summary
 
 
@@ -34,7 +49,7 @@ def list_blueprints(blueprints: Dict[str, dict]) -> List[dict]:
         if bp.get("retired"):
             continue
         results.append(bp)
-    results.sort(key=lambda b: max(0, min(100, b.get("score", 50))), reverse=True)
+    results.sort(key=effective_quality_score, reverse=True)
     return [bp_summary(bp) for bp in results]
 
 
@@ -88,6 +103,12 @@ def _score_blueprint(
     desc = bp.get("description", "").lower()
     tags = [t.lower() for t in bp.get("tags", [])]
     id_words = bp.get("id", "").lower().replace("_", " ").split()
+    compatibility = json.dumps(
+        bp.get("compatibility", {}),
+        ensure_ascii=False,
+        sort_keys=True,
+        default=str,
+    ).lower()
 
     score = 0.0
 
@@ -105,6 +126,9 @@ def _score_blueprint(
             original_hits += 1
         elif any(word in t for t in tags):
             score += 1.5
+            original_hits += 1
+        elif word in compatibility:
+            score += 1.0
             original_hits += 1
         elif word in desc:
             score += 0.5
@@ -127,7 +151,7 @@ def _score_blueprint(
     # Quality bonus for learned blueprints
     if score > 0:
         if bp.get("_source") == "learned":
-            score += bp.get("score", 50) / 100.0
+            score += effective_quality_score(bp) / 100.0
         else:
             score += 1.0  # builtins get baseline bonus
 

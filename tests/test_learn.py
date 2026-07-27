@@ -99,3 +99,32 @@ class TestLearnFromWorkflow:
         assert result["ok"] is True
         assert "data" in result
         assert result["data"]["id"]  # should have auto-generated ID
+
+    def test_preserves_retry_and_assertion_contract(self, engine):
+        wf = make_workflow(tag="execution_contract")
+        wf["steps"][0]["retry"] = {
+            "count": 2,
+            "delay_ms": 100,
+            "backoff": "exponential",
+        }
+        wf["steps"][1]["assert"] = {
+            "path": "data.result",
+            "op": "truthy",
+        }
+        wf["steps"][2]["assertions"] = [{
+            "path": "data.result",
+            "op": "equals",
+            "value": [1, 2, 3],
+        }]
+
+        result = engine.learn_from_workflow(wf, name="execution_contract")
+
+        assert result["ok"] is True
+        bp = engine._blueprints[result["data"]["id"]]
+        assert bp["steps"][0]["retry"] == wf["steps"][0]["retry"]
+        assert bp["steps"][1]["assert"] == wf["steps"][1]["assert"]
+        assert bp["steps"][2]["assertions"] == wf["steps"][2]["assertions"]
+
+        # Learned metadata must not alias the caller's mutable workflow.
+        wf["steps"][0]["retry"]["count"] = 99
+        assert bp["steps"][0]["retry"]["count"] == 2
