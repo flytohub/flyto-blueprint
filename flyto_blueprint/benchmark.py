@@ -30,7 +30,7 @@ REQUIRED_MODES = (
     "blueprint_warm",
 )
 ALLOWED_SPLITS = {"public_eval", "adversarial", "sealed_holdout"}
-TRUSTED_EVIDENCE_TIER = "ci_verified"
+VERIFIED_EVIDENCE_TIER = "ci_verified"
 
 _DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _COMMIT_RE = re.compile(r"^[0-9a-f]{7,64}$")
@@ -219,9 +219,9 @@ def validate_suite(suite: Mapping[str, Any]) -> None:
         raise BenchmarkValidationError(
             "required_modes must contain the four canonical comparison modes"
         )
-    if suite.get("trusted_evidence_tier") != TRUSTED_EVIDENCE_TIER:
+    if suite.get("trusted_evidence_tier") != VERIFIED_EVIDENCE_TIER:
         raise BenchmarkValidationError(
-            "trusted_evidence_tier must be " + TRUSTED_EVIDENCE_TIER
+            "trusted_evidence_tier must be " + VERIFIED_EVIDENCE_TIER
         )
 
     thresholds = suite.get("thresholds")
@@ -290,7 +290,7 @@ def describe_suite(suite: Mapping[str, Any]) -> dict:
         "suite_version": suite["suite_version"],
         "suite_digest": suite_digest(suite),
         "required_modes": list(REQUIRED_MODES),
-        "trusted_evidence_tier": TRUSTED_EVIDENCE_TIER,
+        "trusted_evidence_tier": VERIFIED_EVIDENCE_TIER,
         "tasks": [
             {
                 "id": task["id"],
@@ -371,7 +371,7 @@ def build_scorecard(
             "dataset_commit": dataset_commit,
             "model_id": model_id,
             "environment_digest": environment_digest,
-            "evidence_tier": TRUSTED_EVIDENCE_TIER,
+            "evidence_tier": VERIFIED_EVIDENCE_TIER,
             "record_count": len(ordered_records),
             "pair_count": pair_count,
         },
@@ -644,10 +644,10 @@ def _validate_run(
         record["environment_digest"]
     ):
         raise BenchmarkValidationError("environment_digest must be SHA-256")
-    if record["evidence_tier"] != TRUSTED_EVIDENCE_TIER:
+    if record["evidence_tier"] != VERIFIED_EVIDENCE_TIER:
         raise BenchmarkValidationError(
             "only {} evidence can enter a scorecard".format(
-                TRUSTED_EVIDENCE_TIER
+                VERIFIED_EVIDENCE_TIER
             )
         )
     for field in ("success", "false_reuse"):

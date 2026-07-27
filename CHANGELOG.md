@@ -4,9 +4,9 @@
 
 ### Changed
 
-- Emit benchmark JSON through an explicit CLI output stream rather than a
-  logging-style `print`, preserving the exact payload while avoiding
-  misclassification of the public `ci_verified` label as sensitive log data.
+- Clarified the public `ci_verified` evidence-tier constant name and emit
+  benchmark JSON through an explicit CLI output stream, preserving the exact
+  payload without classifying public verification metadata as a secret.
 - Stopped weekly dependency-version branches from piling up while keeping
   Dependabot security updates enabled. Verified and merged the current
   checkout, Python setup, and PyPI publishing actions.
