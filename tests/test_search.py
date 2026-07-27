@@ -50,3 +50,86 @@ class TestListAndSearch:
             assert "description" in bp
             assert "tags" in bp
             assert "args" in bp
+
+    def test_learned_summary_exposes_trust_and_community_confidence(self, engine):
+        learned = engine.learn_from_workflow(
+            make_workflow(tag="summary_trust"),
+            name="summary_trust",
+        )
+        bp_id = learned["data"]["id"]
+        engine.report_outcome(
+            bp_id,
+            success=True,
+            execution_id="community-summary-1",
+            evidence_tier="community",
+        )
+
+        summary = next(bp for bp in engine.list_blueprints() if bp["id"] == bp_id)
+
+        assert summary["trust_tier"] == "community"
+        assert summary["community_observations"] == 1
+        assert summary["effective_score"] == summary["score"]
+
+    def test_search_matches_repository_compatibility(self, engine):
+        learned = engine.learn_from_execution(
+            make_workflow(tag="repo_context"),
+            name="generic_endpoint",
+            compatibility={
+                "repository": "flytohub/payments-api",
+                "framework": "fastapi",
+            },
+        )
+
+        results = engine.search("payments-api")
+
+        assert learned["data"]["id"] in [bp["id"] for bp in results]
+
+    def test_summary_exposes_evidence_card(self, engine):
+        learned = engine.learn_from_workflow(
+            make_workflow(tag="evidence_summary"),
+            name="evidence_summary",
+        )
+        bp_id = learned["data"]["id"]
+        engine.report_outcome(
+            bp_id,
+            success=True,
+            execution_id="summary-evidence-1",
+            evidence={
+                "duration_ms": 42,
+                "model_calls_used": 0,
+                "planner_model_calls_used": 0,
+                "model_call_scope": "planner",
+                "selection_mode": "deterministic",
+            },
+        )
+
+        summary = next(bp for bp in engine.list_blueprints() if bp["id"] == bp_id)
+
+        assert summary["evidence_card"]["sample_count"] == 1
+        assert summary["evidence_card"]["zero_planner_model_call_count"] == 1
+        assert summary["evidence_card"]["zero_llm_reuse_count"] == 1
+
+    def test_community_signal_influences_ranking_without_rewriting_score(self, engine):
+        low = engine.learn_from_workflow(
+            make_workflow(tag="community_low"),
+            name="community_low",
+        )
+        high = engine.learn_from_workflow(
+            make_workflow_alt(),
+            name="community_high",
+        )
+        low_id = low["data"]["id"]
+        high_id = high["data"]["id"]
+
+        for index in range(20):
+            engine.report_outcome(
+                high_id,
+                success=True,
+                execution_id="community-rank-{}".format(index),
+                evidence_tier="community",
+            )
+
+        learned = [bp for bp in engine.list_blueprints() if bp.get("source") == "learned"]
+        ids = [bp["id"] for bp in learned]
+        assert ids.index(high_id) < ids.index(low_id)
+        assert engine._blueprints[high_id]["score"] == 50

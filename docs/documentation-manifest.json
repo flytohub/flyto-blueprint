@@ -24,8 +24,8 @@
   "source_areas": [
     {
       "id": "engine-api",
-      "description": "Stable package exports and orchestration API for loading, searching, expanding, learning, and outcome reporting.",
-      "paths": ["flyto_blueprint/__init__.py", "flyto_blueprint/engine.py", "flyto_blueprint/models.py"],
+      "description": "Stable package exports and orchestration API for loading, searching, expanding, learning, evidence scoring, and portable exchange.",
+      "paths": ["flyto_blueprint/__init__.py", "flyto_blueprint/engine.py", "flyto_blueprint/models.py", "flyto_blueprint/sharing.py"],
       "documentation": ["docs/API.md", "docs/FEATURES.md"]
     },
     {
@@ -39,6 +39,13 @@
       "description": "Abstract persistence contract and memory, SQLite, and Firestore implementations for learned blueprint state.",
       "paths": ["flyto_blueprint/storage/**"],
       "documentation": ["docs/API.md#storage-api", "docs/FEATURES.md#storage-backends"]
+    },
+    {
+      "id": "portable-sharing",
+      "description": "Integrity-checked explicit Blueprint export/import, sensitive-field rejection, publisher signatures, and trust quarantine.",
+      "paths": ["flyto_blueprint/sharing.py"],
+      "documentation": ["docs/FEATURES.md#portable-sharing-and-trust", "docs/API.md#export_blueprint", "ARCHITECTURE.md"],
+      "tests": ["tests/test_sharing.py"]
     },
     {
       "id": "catalog-and-tools",
@@ -89,10 +96,20 @@
       "title": "Workflow learning and scoring",
       "kind": "library",
       "status": "active",
-      "description": "Fingerprints successful workflows, abstracts reusable parameters, deduplicates patterns, and updates outcome-based scores.",
+      "description": "Fingerprints successful workflows with compatibility context, abstracts reusable parameters, deduplicates patterns, and separates trusted scores from bounded community observations.",
       "source": ["flyto_blueprint/learn.py", "flyto_blueprint/fingerprint.py", "flyto_blueprint/scoring.py", "flyto_blueprint/engine.py"],
       "documentation": ["docs/FEATURES.md#workflow-learning", "docs/FEATURES.md#outcome-scoring", "docs/API.md#learn_from_workflow"],
       "tests": ["tests/test_learn.py", "tests/test_fingerprint.py", "tests/test_scoring.py"]
+    },
+    {
+      "id": "portable-sharing",
+      "title": "Portable Blueprint sharing and trust quarantine",
+      "kind": "api",
+      "status": "active",
+      "description": "Exports integrity-checked optional host-signed bundles and imports them with sensitive-data rejection, fresh counters, semantic deduplication, and community quarantine.",
+      "source": ["flyto_blueprint/sharing.py", "flyto_blueprint/engine.py"],
+      "documentation": ["docs/FEATURES.md#portable-sharing-and-trust", "docs/API.md#export_blueprint", "ARCHITECTURE.md"],
+      "tests": ["tests/test_sharing.py"]
     },
     {
       "id": "storage-backends",
@@ -109,10 +126,10 @@
       "title": "MCP tool definitions",
       "kind": "api",
       "status": "active",
-      "description": "Publishes JSON Schema tool definitions for blueprint discovery, expansion, learning, and outcome reporting to an embedding host.",
+      "description": "Publishes JSON Schema tool definitions for blueprint discovery, expansion, learning, outcome reporting, and unsigned portable exchange to an embedding host.",
       "source": ["flyto_blueprint/tools.py"],
       "documentation": ["docs/API.md#mcp-tool-definitions", "docs/FEATURES.md#mcp-integration"],
-      "tests": ["tests/test_integration.py"]
+      "tests": ["tests/test_integration.py", "tests/test_tools.py"]
     },
     {
       "id": "source-backed-reference",
