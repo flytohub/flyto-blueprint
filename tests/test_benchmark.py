@@ -152,6 +152,37 @@ def test_describe_suite_hides_the_sealed_prompt_and_binds_every_task():
     assert "prompt" not in sealed
 
 
+def test_v2_suite_is_exactly_ten_tasks_by_twenty_paired_trials():
+    suite_path = (
+        ROOT / "benchmarks/suites/blueprint-effectiveness-v2.yaml"
+    )
+    suite = load_suite(suite_path)
+    description = describe_suite(suite)
+
+    assert len(suite["tasks"]) == 10
+    assert suite["thresholds"]["min_trials_per_task"] == 20
+    assert description["required_modes"] == [
+        "agent_baseline",
+        "flyto_no_blueprint",
+        "blueprint_cold",
+        "blueprint_warm",
+    ]
+    assert len(suite["tasks"]) * 20 * len(description["required_modes"]) == 800
+
+
+def test_v2_host_template_is_secret_free_and_pins_model_digest():
+    template_path = ROOT / "benchmarks/templates/host-run-template.yaml"
+    raw = template_path.read_text(encoding="utf-8")
+
+    assert "api_key" not in raw.lower()
+    assert "password" not in raw.lower()
+    assert "secret" not in raw.lower()
+    assert (
+        "e737aff7b8d457961517eb4895c0c1c597867d943a7f8dc82965eb826de324b8"
+        in raw
+    )
+
+
 def test_verified_scorecard_measures_planner_scope_without_overclaiming():
     suite = _suite()
     scorecard = build_scorecard(suite, _records(suite))

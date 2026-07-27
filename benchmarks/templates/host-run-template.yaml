@@ -1,0 +1,17 @@
+schema_version: flyto-ai-blueprint-host.v1
+provider:
+  type: ollama
+  base_url: http://127.0.0.1:11434
+  model: flyto-qwen3:8b
+  model_digest: e737aff7b8d457961517eb4895c0c1c597867d943a7f8dc82965eb826de324b8
+  temperature: 0
+  max_output_tokens: 256
+  timeout_seconds: 60
+  think: false
+run:
+  trials: 20
+  seed_base: 20260728
+compatibility:
+  repository: flytohub/flyto-blueprint
+  runtime: python3.11
+  framework: flyto2
