@@ -9,7 +9,7 @@ Generated inventory: **20 modules** and **155 class/function/method declarations
 | Module | Lines | Declarations | Responsibility |
 |---|---:|---:|---|
 | [`flyto_blueprint/__init__.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/__init__.py#L1) | 22 | 1 | flyto-blueprint — Self-evolving workflow pattern engine. |
-| [`flyto_blueprint/benchmark.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1) | 1186 | 39 | Reproducible scorecards for host-executed Blueprint benchmarks. |
+| [`flyto_blueprint/benchmark.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1) | 1187 | 39 | Reproducible scorecards for host-executed Blueprint benchmarks. |
 | [`flyto_blueprint/compose.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/compose.py#L1) | 307 | 6 | Compose block expansion for blueprints. |
 | [`flyto_blueprint/engine.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/engine.py#L1) | 279 | 13 | BlueprintEngine — orchestrator for loading, searching, expanding, and evolving blueprints. |
 | [`flyto_blueprint/fingerprint.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/fingerprint.py#L1) | 21 | 1 | Structural fingerprinting for blueprint deduplication. |
@@ -77,7 +77,7 @@ Generated inventory: **20 modules** and **155 class/function/method declarations
 | function | `def _require_number(value: Any, label: str, *, minimum: float, maximum: float \| None=None) -> float` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1138`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1138) |
 | function | `def _reject_json_constant(value: str) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1157`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1157) |
 | function | `def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1161`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1161) |
-| function | `def _print_json(value: Mapping[str, Any], stream: Any=sys.stdout) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1172`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1172) |
+| function | `def _print_json(value: Mapping[str, Any], stream: Any \| None=None) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1172`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1172) |
 
 ## `flyto_blueprint/compose.py`
 

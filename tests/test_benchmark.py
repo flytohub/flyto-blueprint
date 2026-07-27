@@ -480,6 +480,22 @@ def test_cli_writes_a_verified_scorecard(tmp_path):
     assert json.loads(output_path.read_text())["proof_status"] == "verified"
 
 
+def test_cli_writes_json_to_stdout_without_log_side_effects(capsys):
+    exit_code = main(
+        [
+            "describe-suite",
+            "--suite",
+            str(SUITE_PATH),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert json.loads(captured.out)["suite_id"] == "blueprint-effectiveness-v1"
+    assert captured.out.endswith("\n")
+    assert captured.err == ""
+
+
 def test_cli_returns_one_when_a_valid_scorecard_regresses(tmp_path):
     suite = _suite()
     records = _records(suite)

@@ -29,7 +29,7 @@
   Actions; security updates remain enabled. Release Actions use verified
   updates, and the single Grype exception is bound to the patched PyPI Action
   commit instead of suppressing the package broadly.
-- Latest local verification on 2026-07-27: Ruff passed, 166 tests passed,
+- Latest local verification on 2026-07-27: Ruff passed, 167 tests passed,
   generated documentation is current, benchmark result integrity passed with
   the explicit `no_results` status, and sdist/wheel build passed. Flyto2
   Indexer strict full-scan passed 17/17 with no warnings and a documentation

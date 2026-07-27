@@ -1169,16 +1169,17 @@ def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict:
     return value
 
 
-def _print_json(value: Mapping[str, Any], stream: Any = sys.stdout) -> None:
-    print(
+def _print_json(value: Mapping[str, Any], stream: Any | None = None) -> None:
+    output_stream = sys.stdout if stream is None else stream
+    output_stream.write(
         json.dumps(
             value,
             ensure_ascii=False,
             indent=2,
             sort_keys=True,
             allow_nan=False,
-        ),
-        file=stream,
+        )
+        + "\n"
     )
 
 
