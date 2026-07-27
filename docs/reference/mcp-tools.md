@@ -2,7 +2,7 @@
 
 # MCP Tool Schemas
 
-`get_blueprint_tools()` publishes **4 tool definitions**.
+`get_blueprint_tools()` publishes **6 tool definitions**.
 
 ## `list_blueprints`
 
@@ -47,3 +47,25 @@ Definition: [`flyto_blueprint/tools.py:76`](https://github.com/flytohub/flyto-bl
 |---|---|---|---|
 | `blueprint_id` | `string` | yes | Blueprint ID that was used |
 | `success` | `boolean` | yes | True if the workflow succeeded, false if it failed |
+| `execution_id` | `string` | no | Stable execution ID used to deduplicate outcome reports |
+
+## `export_blueprint`
+
+Create an integrity-checked portable bundle for an existing Blueprint. This does not upload or publish anything. Host-controlled signing keys are never accepted through the model-facing tool.
+
+Definition: [`flyto_blueprint/tools.py:102`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/tools.py#L102).
+
+| Input | Type | Required | Purpose |
+|---|---|---|---|
+| `blueprint_id` | `string` | yes | Blueprint ID to export |
+| `publisher` | `string` | no | Optional publisher label included as an untrusted claim |
+
+## `import_blueprint`
+
+Validate and import a portable Blueprint bundle. Unsigned or unknown publishers are quarantined as community trust; the host owns trusted keys.
+
+Definition: [`flyto_blueprint/tools.py:125`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/tools.py#L125).
+
+| Input | Type | Required | Purpose |
+|---|---|---|---|
+| `bundle` | `object` | yes | Portable bundle returned by export_blueprint |

@@ -1,6 +1,9 @@
 # Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Learn reusable blueprints from concrete workflows."""
+import copy
+import hashlib
+import json
 import re
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -18,6 +21,9 @@ def learn_from_workflow(
     name: Optional[str] = None,
     tags: Optional[List[str]] = None,
     verified: bool = False,
+    compatibility: Optional[dict] = None,
+    verification: Optional[dict] = None,
+    trust_tier: Optional[str] = None,
 ) -> dict:
     """Abstract a concrete workflow into a reusable blueprint.
 
@@ -38,9 +44,21 @@ def learn_from_workflow(
     if len(steps) < 3:
         return {"ok": False, "error": "Workflow too simple (min 3 steps)"}
 
-    # Fingerprint dedup
+    if trust_tier is None:
+        trust_tier = "local_verified" if verified else "community"
+    if trust_tier not in ("community", "local_verified", "ci_verified", "official"):
+        return {"ok": False, "error": "Unknown trust tier '{}'".format(trust_tier)}
+
+    # Fingerprint dedup. Repository/environment context scopes structurally
+    # identical coding patterns so one repo's conventions do not overwrite
+    # another repo's verified playbook.
     fingerprint = compute_fingerprint(steps)
-    existing_id = _find_by_fingerprint(fingerprint, blueprints)
+    context_fingerprint = _compute_context_fingerprint(compatibility)
+    existing_id = _find_by_fingerprint(
+        fingerprint,
+        context_fingerprint,
+        blueprints,
+    )
     if existing_id:
         return {
             "ok": True,
@@ -71,15 +89,27 @@ def learn_from_workflow(
         verified=verified,
         description=workflow.get("description", ""),
         fingerprint=fingerprint,
+        context_fingerprint=context_fingerprint,
+        compatibility=compatibility,
+        verification=verification,
+        trust_tier=trust_tier,
     )
 
     return {"ok": True, "data": bp}
 
 
-def _find_by_fingerprint(fingerprint: str, blueprints: Dict[str, dict]) -> Optional[str]:
+def _find_by_fingerprint(
+    fingerprint: str,
+    context_fingerprint: Optional[str],
+    blueprints: Dict[str, dict],
+) -> Optional[str]:
     """Find an existing learned blueprint with the same fingerprint."""
     for bp_id, bp in blueprints.items():
-        if bp.get("_source") == "learned" and bp.get("fingerprint") == fingerprint:
+        if (
+            bp.get("_source") == "learned"
+            and bp.get("fingerprint") == fingerprint
+            and bp.get("context_fingerprint") == context_fingerprint
+        ):
             return bp_id
     return None
 
@@ -94,6 +124,10 @@ def _build_blueprint_dict(
     verified: bool,
     description: str,
     fingerprint: str,
+    context_fingerprint: Optional[str],
+    compatibility: Optional[dict],
+    verification: Optional[dict],
+    trust_tier: str,
 ) -> dict:
     """Construct a learned blueprint dict from abstracted workflow steps.
 
@@ -114,6 +148,13 @@ def _build_blueprint_dict(
             new_step["params"] = abstract_params(step["params"], args_def)
         if "skip_if_missing" in step:
             new_step["skip_if_missing"] = step["skip_if_missing"]
+        # Preserve the execution contract authored with the workflow. These
+        # fields are declarative and are interpreted by the runtime after
+        # expansion; dropping them would turn verified/retryable workflows
+        # into weaker learned patterns.
+        for field in ("retry", "assert", "assertions"):
+            if field in step:
+                new_step[field] = copy.deepcopy(step[field])
         abstracted_steps.append(new_step)
 
     # Detect compose opportunity
@@ -161,6 +202,29 @@ def _build_blueprint_dict(
     bp["fail_count"] = 0
     bp["last_used_at"] = None
     bp["fingerprint"] = fingerprint
+    bp["context_fingerprint"] = context_fingerprint
+    bp["compatibility"] = copy.deepcopy(compatibility or {})
+    bp["verification"] = copy.deepcopy(verification or {})
+    bp["trust_tier"] = trust_tier
+    bp["provenance"] = {
+        "origin": "local_execution" if verified else "local_workflow",
+    }
+    bp["community_success_count"] = 0
+    bp["community_fail_count"] = 0
+    bp["community_success_rate"] = None
     bp["retired"] = False
 
     return bp
+
+
+def _compute_context_fingerprint(compatibility: Optional[dict]) -> Optional[str]:
+    if not compatibility:
+        return None
+    payload = json.dumps(
+        compatibility,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        default=str,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()[:12]
