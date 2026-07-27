@@ -5,7 +5,7 @@ provider:
   model: flyto-qwen3:8b
   model_digest: e737aff7b8d457961517eb4895c0c1c597867d943a7f8dc82965eb826de324b8
   temperature: 0
-  max_output_tokens: 256
+  max_output_tokens: 32
   timeout_seconds: 60
   think: false
 run:
