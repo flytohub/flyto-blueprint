@@ -37,11 +37,17 @@ jobs:
       - name: Tests
         run: pytest
 
-      - name: Benchmark evidence integrity
+      - name: Benchmark v1 evidence integrity
         run: >-
           python scripts/benchmark-scorecard.py verify-results
           --suite benchmarks/suites/blueprint-effectiveness-v1.yaml
           --results-dir benchmarks/results
+
+      - name: Benchmark v2 evidence integrity
+        run: >-
+          python scripts/benchmark-scorecard.py verify-results
+          --suite benchmarks/suites/blueprint-effectiveness-v2.yaml
+          --results-dir benchmarks/results/blueprint-effectiveness-v2
 
       - name: Build package
         run: python -m build

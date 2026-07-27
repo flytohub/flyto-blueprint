@@ -1,0 +1,286 @@
+{
+  "claim_scope": "planner_model_usage_only",
+  "comparisons": {
+    "blueprint_effect": {
+      "baseline_mode": "flyto_no_blueprint",
+      "candidate_mode": "blueprint_warm",
+      "p95_latency_increase": -0.2464,
+      "paired_planner_token_reduction_ci_95_lower_bound": 1.0,
+      "paired_planner_token_reduction_ci_95_upper_bound": 1.0,
+      "paired_planner_token_reduction_median": 1.0,
+      "paired_sample_count": 80,
+      "planner_model_call_reduction": null,
+      "planner_token_reduction": null,
+      "planner_token_total_reduction": 0.7298,
+      "retry_reduction": null,
+      "success_rate_delta": 0.4,
+      "tool_call_reduction": null
+    },
+    "end_to_end": {
+      "baseline_mode": "agent_baseline",
+      "candidate_mode": "blueprint_warm",
+      "p95_latency_increase": -0.2585,
+      "paired_planner_token_reduction_ci_95_lower_bound": 1.0,
+      "paired_planner_token_reduction_ci_95_upper_bound": 1.0,
+      "paired_planner_token_reduction_median": 1.0,
+      "paired_sample_count": 200,
+      "planner_model_call_reduction": 1.0,
+      "planner_token_reduction": 1.0,
+      "planner_token_total_reduction": 0.8908,
+      "retry_reduction": null,
+      "success_rate_delta": 0.9,
+      "tool_call_reduction": null
+    },
+    "warmup_effect": {
+      "baseline_mode": "blueprint_cold",
+      "candidate_mode": "blueprint_warm",
+      "p95_latency_increase": -0.2476,
+      "paired_planner_token_reduction_ci_95_lower_bound": 1.0,
+      "paired_planner_token_reduction_ci_95_upper_bound": 1.0,
+      "paired_planner_token_reduction_median": 1.0,
+      "paired_sample_count": 80,
+      "planner_model_call_reduction": null,
+      "planner_token_reduction": null,
+      "planner_token_total_reduction": 0.7391,
+      "retry_reduction": null,
+      "success_rate_delta": 0.4,
+      "tool_call_reduction": null
+    }
+  },
+  "evidence_digest": "sha256:e74922e69b5e28c8bf0c4c852f9776b22354ded6363aca97e90f15ecf8394aa5",
+  "gate": {
+    "checks": [
+      {
+        "actual": [
+          "incompatible-blueprint-is-not-reused",
+          "malformed-community-evidence-cannot-promote",
+          "multilingual-negation-ja",
+          "multilingual-negation-zh",
+          "ordinary-conversation-does-not-call-mcp",
+          "ordinary-conversation-en-does-not-call-mcp",
+          "quoted-tool-request-is-not-executed",
+          "route-data-transform-without-replanning",
+          "route-explicit-blueprint-request",
+          "sealed-multilingual-routing-holdout"
+        ],
+        "expected": [
+          "incompatible-blueprint-is-not-reused",
+          "malformed-community-evidence-cannot-promote",
+          "multilingual-negation-ja",
+          "multilingual-negation-zh",
+          "ordinary-conversation-does-not-call-mcp",
+          "ordinary-conversation-en-does-not-call-mcp",
+          "quoted-tool-request-is-not-executed",
+          "route-data-transform-without-replanning",
+          "route-explicit-blueprint-request",
+          "sealed-multilingual-routing-holdout"
+        ],
+        "id": "task_coverage",
+        "passed": true
+      },
+      {
+        "actual": [
+          "adversarial",
+          "public_eval",
+          "sealed_holdout"
+        ],
+        "expected": [
+          "adversarial",
+          "public_eval",
+          "sealed_holdout"
+        ],
+        "id": "required_splits",
+        "passed": true
+      },
+      {
+        "actual": {
+          "incompatible-blueprint-is-not-reused": 20,
+          "malformed-community-evidence-cannot-promote": 20,
+          "multilingual-negation-ja": 20,
+          "multilingual-negation-zh": 20,
+          "ordinary-conversation-does-not-call-mcp": 20,
+          "ordinary-conversation-en-does-not-call-mcp": 20,
+          "quoted-tool-request-is-not-executed": 20,
+          "route-data-transform-without-replanning": 20,
+          "route-explicit-blueprint-request": 20,
+          "sealed-multilingual-routing-holdout": 20
+        },
+        "expected": "at least 20 per task",
+        "id": "minimum_trials",
+        "passed": true
+      },
+      {
+        "actual": 0.9,
+        "expected": ">= -0.02",
+        "id": "end_to_end_success_non_inferiority",
+        "passed": true
+      },
+      {
+        "actual": 0.4,
+        "expected": ">= -0.02",
+        "id": "blueprint_effect_success_non_inferiority",
+        "passed": true
+      },
+      {
+        "actual": 0.9812,
+        "expected": ">= 0.8",
+        "id": "candidate_confidence",
+        "passed": true
+      },
+      {
+        "actual": 1.0,
+        "expected": ">= 0.3",
+        "id": "end_to_end_planner_token_reduction",
+        "passed": true
+      },
+      {
+        "actual": 1.0,
+        "expected": ">= 0.3",
+        "id": "blueprint_effect_planner_token_reduction",
+        "passed": true
+      },
+      {
+        "actual": -0.2585,
+        "expected": "<= 0.1",
+        "id": "end_to_end_p95_latency",
+        "passed": true
+      },
+      {
+        "actual": -0.2464,
+        "expected": "<= 0.1",
+        "id": "blueprint_effect_p95_latency",
+        "passed": true
+      },
+      {
+        "actual": 0,
+        "expected": "<= 0",
+        "id": "false_reuse",
+        "passed": true
+      },
+      {
+        "actual": 1.0,
+        "expected": ">= 1.0",
+        "id": "assertion_pass_rate",
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "status": "verified"
+  },
+  "limitations": [
+    "The host executes tasks; this scorecard validates only the records supplied by that trusted boundary.",
+    "Planner tokens exclude model-backed workflow steps and any provider-internal usage the host cannot observe."
+  ],
+  "modes": {
+    "agent_baseline": {
+      "assertion_pass_rate": 0.5667,
+      "assertions_passed": 340,
+      "assertions_total": 600,
+      "duration_ms_p50": 781.736,
+      "duration_ms_p95": 1018.602,
+      "false_reuse_count": 0,
+      "planner_model_calls_median": 1.0,
+      "planner_model_calls_total": 200,
+      "planner_tokens_median": 133.5,
+      "planner_tokens_total": 26366,
+      "retry_count": 0,
+      "retry_median": 0.0,
+      "run_count": 200,
+      "success_count": 20,
+      "success_rate": 0.1,
+      "tool_calls_median": 0.0,
+      "tool_calls_total": 20,
+      "visible_cost_sample_count": 200,
+      "visible_cost_usd_median": 0.0,
+      "visible_cost_usd_total": 0.0,
+      "wilson_95_lower_bound": 0.0657,
+      "wilson_95_upper_bound": 0.1494
+    },
+    "blueprint_cold": {
+      "assertion_pass_rate": 0.7667,
+      "assertions_passed": 460,
+      "assertions_total": 600,
+      "duration_ms_p50": 0.067,
+      "duration_ms_p95": 1003.872,
+      "false_reuse_count": 0,
+      "planner_model_calls_median": 0.0,
+      "planner_model_calls_total": 80,
+      "planner_tokens_median": 0.0,
+      "planner_tokens_total": 11040,
+      "retry_count": 0,
+      "retry_median": 0.0,
+      "run_count": 200,
+      "success_count": 120,
+      "success_rate": 0.6,
+      "tool_calls_median": 0.0,
+      "tool_calls_total": 60,
+      "visible_cost_sample_count": 200,
+      "visible_cost_usd_median": 0.0,
+      "visible_cost_usd_total": 0.0,
+      "wilson_95_lower_bound": 0.5308,
+      "wilson_95_upper_bound": 0.6654
+    },
+    "blueprint_warm": {
+      "assertion_pass_rate": 1.0,
+      "assertions_passed": 600,
+      "assertions_total": 600,
+      "duration_ms_p50": 0.067,
+      "duration_ms_p95": 755.311,
+      "false_reuse_count": 0,
+      "planner_model_calls_median": 0.0,
+      "planner_model_calls_total": 20,
+      "planner_tokens_median": 0.0,
+      "planner_tokens_total": 2880,
+      "retry_count": 0,
+      "retry_median": 0.0,
+      "run_count": 200,
+      "success_count": 200,
+      "success_rate": 1.0,
+      "tool_calls_median": 0.0,
+      "tool_calls_total": 0,
+      "visible_cost_sample_count": 200,
+      "visible_cost_usd_median": 0.0,
+      "visible_cost_usd_total": 0.0,
+      "wilson_95_lower_bound": 0.9812,
+      "wilson_95_upper_bound": 1.0
+    },
+    "flyto_no_blueprint": {
+      "assertion_pass_rate": 0.7333,
+      "assertions_passed": 440,
+      "assertions_total": 600,
+      "duration_ms_p50": 0.068,
+      "duration_ms_p95": 1002.218,
+      "false_reuse_count": 0,
+      "planner_model_calls_median": 0.0,
+      "planner_model_calls_total": 80,
+      "planner_tokens_median": 0.0,
+      "planner_tokens_total": 10660,
+      "retry_count": 0,
+      "retry_median": 0.0,
+      "run_count": 200,
+      "success_count": 120,
+      "success_rate": 0.6,
+      "tool_calls_median": 0.0,
+      "tool_calls_total": 80,
+      "visible_cost_sample_count": 200,
+      "visible_cost_usd_median": 0.0,
+      "visible_cost_usd_total": 0.0,
+      "wilson_95_lower_bound": 0.5308,
+      "wilson_95_upper_bound": 0.6654
+    }
+  },
+  "proof_status": "verified",
+  "provenance": {
+    "dataset_commit": "7a4ad53d80be2aacd01b843dd105a95ef16238b1",
+    "environment_digest": "sha256:75e304d8072abfe8a17cfbdd6c919ed500660e0f6ff4fd7ed3019ad5816c57b8",
+    "evidence_tier": "ci_verified",
+    "model_id": "ollama/flyto-qwen3:8b@e737aff7b8d4",
+    "pair_count": 200,
+    "record_count": 800
+  },
+  "schema_version": "benchmark-scorecard.v1",
+  "scorecard_digest": "sha256:f5978ee3413fa2d44ecc72122c296dae659d0a8b555a4e3745737bc0265692f2",
+  "suite_digest": "sha256:90af82856a67629852419cd7e1ac1e5ba695d221cb7c2cf90e8377eef43805aa",
+  "suite_id": "blueprint-effectiveness-v2",
+  "suite_version": 2
+}

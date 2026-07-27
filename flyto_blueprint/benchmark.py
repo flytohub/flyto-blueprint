@@ -1045,7 +1045,9 @@ def _paired_token_reductions(
     for modes in pairs.values():
         baseline = modes[baseline_mode]
         if baseline <= 0:
-            return []
+            if modes[candidate_mode] > 0:
+                return []
+            continue
         reductions.append(1 - (modes[candidate_mode] / baseline))
     return reductions
 

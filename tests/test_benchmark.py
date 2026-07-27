@@ -7,6 +7,7 @@ import pytest
 from flyto_blueprint.benchmark import (
     BenchmarkValidationError,
     REQUIRED_MODES,
+    _paired_token_reductions,
     build_scorecard,
     describe_suite,
     load_runs,
@@ -316,6 +317,73 @@ def test_token_reduction_must_survive_paired_confidence_bound():
     assert scorecard["proof_status"] == "regression"
 
 
+def test_paired_reduction_skips_only_uninformative_zero_zero_pairs():
+    records = [
+        {
+            "task_id": "no-planner",
+            "trial": 1,
+            "mode": "flyto_no_blueprint",
+            "planner_input_tokens": 0,
+            "planner_output_tokens": 0,
+        },
+        {
+            "task_id": "no-planner",
+            "trial": 1,
+            "mode": "blueprint_warm",
+            "planner_input_tokens": 0,
+            "planner_output_tokens": 0,
+        },
+        {
+            "task_id": "planner-needed",
+            "trial": 1,
+            "mode": "flyto_no_blueprint",
+            "planner_input_tokens": 80,
+            "planner_output_tokens": 20,
+        },
+        {
+            "task_id": "planner-needed",
+            "trial": 1,
+            "mode": "blueprint_warm",
+            "planner_input_tokens": 40,
+            "planner_output_tokens": 10,
+        },
+    ]
+
+    assert _paired_token_reductions(
+        records,
+        "flyto_no_blueprint",
+        "blueprint_warm",
+    ) == [0.5]
+
+
+def test_paired_reduction_fails_closed_for_candidate_only_tokens():
+    records = [
+        {
+            "task_id": "candidate-regression",
+            "trial": 1,
+            "mode": "flyto_no_blueprint",
+            "planner_input_tokens": 0,
+            "planner_output_tokens": 0,
+        },
+        {
+            "task_id": "candidate-regression",
+            "trial": 1,
+            "mode": "blueprint_warm",
+            "planner_input_tokens": 8,
+            "planner_output_tokens": 2,
+        },
+    ]
+
+    assert (
+        _paired_token_reductions(
+            records,
+            "flyto_no_blueprint",
+            "blueprint_warm",
+        )
+        == []
+    )
+
+
 def test_false_reuse_fails_the_gate_even_when_every_run_succeeds():
     suite = _suite()
     records = _records(suite)
@@ -589,6 +657,21 @@ def test_committed_scorecard_is_rebuilt_and_verified(tmp_path):
     result = verify_result_directory(suite, tmp_path)
 
     assert result["passed"] is True
+    assert result["verified_count"] == 1
+
+
+def test_committed_v2_evidence_is_rebuilt_and_verified():
+    suite = load_suite(
+        ROOT / "benchmarks/suites/blueprint-effectiveness-v2.yaml"
+    )
+
+    result = verify_result_directory(
+        suite,
+        ROOT / "benchmarks/results/blueprint-effectiveness-v2",
+    )
+
+    assert result["passed"] is True
+    assert result["status"] == "verified"
     assert result["verified_count"] == 1
 
 

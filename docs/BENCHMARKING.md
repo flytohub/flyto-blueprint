@@ -19,6 +19,33 @@ This benchmark exists to catch those failures. It does not execute an agent.
 The host runs the experiment; this package checks that the evidence is paired,
 complete, comparable, and strong enough to support a narrow claim.
 
+## The result in one screen
+
+On 2026-07-28, a local `flyto-qwen3:8b` planner ran 10 routing, reuse, and
+guardrail tasks 20 times in every mode: 800 records and 200 paired trials.
+
+| Mode | Assertion success | Planner calls | Planner tokens | p95 latency |
+| --- | ---: | ---: | ---: | ---: |
+| Agent baseline | 10% | 200 | 26,366 | 1,018.602 ms |
+| Flyto2, no Blueprint | 60% | 80 | 10,660 | 1,002.218 ms |
+| Blueprint cold | 60% | 80 | 11,040 | 1,003.872 ms |
+| Blueprint warm | 100% | 20 | 2,880 | 755.311 ms |
+
+Warm Blueprint versus Flyto2 without Blueprint used 72.98% fewer total planner
+tokens and 75% fewer planner model calls. Its benchmark success rate improved
+by 40 percentage points, p95 latency fell 24.64%, all 600 candidate assertions
+passed, and false reuse was zero. Across the 80 informative token pairs, the
+median reduction and its exact 95% confidence lower bound were both 100%.
+Pairs where neither mode called a planner are excluded from that median rather
+than treated as free wins.
+
+This is a focused planner-routing benchmark, not a general intelligence or
+coding benchmark. The 10% baseline is the rate at which that baseline satisfied
+these task-specific routing and safety assertions; it is not a statement that
+Qwen3 succeeds at only 10% of ordinary work. The full story, raw JSONL, and
+scorecard are in the
+[v2 result directory](../benchmarks/results/blueprint-effectiveness-v2/README.md).
+
 ## The experiment
 
 Every task and trial runs in four modes with the same model, environment, and
@@ -65,15 +92,22 @@ Use the suite description to obtain the exact digests a host must record:
 
 ```bash
 flyto-blueprint-benchmark describe-suite \
-  --suite benchmarks/suites/blueprint-effectiveness-v1.yaml
+  --suite benchmarks/suites/blueprint-effectiveness-v2.yaml
 ```
 
 Inside a repository checkout, the equivalent command is:
 
 ```bash
 python scripts/benchmark-scorecard.py describe-suite \
-  --suite benchmarks/suites/blueprint-effectiveness-v1.yaml
+  --suite benchmarks/suites/blueprint-effectiveness-v2.yaml
 ```
+
+The reusable, secret-free host configuration is
+[`benchmarks/templates/host-run-template.yaml`](../benchmarks/templates/host-run-template.yaml).
+It pins the local model digest, disables model thinking, limits the response to
+32 tokens, and requires 20 trials. A sealed task prompt stays outside Git and
+must match the digest in the suite; replace both when creating a private
+holdout for a new benchmark.
 
 ## What counts as passing
 
@@ -98,9 +132,9 @@ Generate a scorecard after the trusted host writes its JSONL records:
 
 ```bash
 python scripts/benchmark-scorecard.py score \
-  --suite benchmarks/suites/blueprint-effectiveness-v1.yaml \
-  --runs benchmarks/results/<release>.runs.jsonl \
-  --output benchmarks/results/<release>.scorecard.json \
+  --suite benchmarks/suites/blueprint-effectiveness-v2.yaml \
+  --runs benchmarks/results/blueprint-effectiveness-v2/<release>.runs.jsonl \
+  --output benchmarks/results/blueprint-effectiveness-v2/<release>.scorecard.json \
   --fail-on-regression
 ```
 
@@ -108,8 +142,8 @@ Commit both files. CI rebuilds every scorecard and rejects missing, edited,
 stale, malformed, incomplete, or below-threshold evidence:
 
 ```text
-benchmarks/results/<release>.runs.jsonl
-benchmarks/results/<release>.scorecard.json
+benchmarks/results/blueprint-effectiveness-v2/<release>.runs.jsonl
+benchmarks/results/blueprint-effectiveness-v2/<release>.scorecard.json
 ```
 
 When the directory is empty, verification passes only as `no_results`. That
@@ -129,5 +163,6 @@ hidden prompt behind a sealed digest. Stronger future evidence should add
 provider-signed usage receipts or an independent benchmark runner without
 putting private prompts in Git.
 
-That limitation is why this repository currently publishes the harness and the
-empty result state, not a made-up “Blueprint is stronger” number.
+That limitation is why the published result says exactly “planner usage on this
+suite and host.” It does not turn one local run into a claim that Blueprint
+makes every model, coding task, or model-backed workflow step cheaper.
