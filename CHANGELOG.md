@@ -4,6 +4,11 @@
 
 ### Changed
 
+- Stopped weekly dependency-version branches from piling up while keeping
+  Dependabot security updates enabled. Verified and merged the current
+  checkout, Python setup, and PyPI publishing actions.
+- Narrowed Grype's GitHub Action false-positive handling to one advisory, one
+  package type, and the exact patched PyPI publishing commit.
 - Blueprint summaries now carry a data-driven Evidence Card with trusted sample
   counts, observed success, Wilson 95% lower bound, retry/assertion rates,
   latency percentiles, and measured zero-planner-call reuse. Older ambiguous

@@ -4,7 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    # Routine version-update PRs are intentionally disabled. Repository
+    # Dependabot security updates remain enabled and are handled separately.
+    open-pull-requests-limit: 0
     labels:
       - "dependencies"
       - "security"
@@ -18,7 +20,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    # Keep security updates, but do not create weekly version-bump branches.
+    open-pull-requests-limit: 0
     labels:
       - "dependencies"
       - "security"

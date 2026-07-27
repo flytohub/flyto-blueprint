@@ -21,7 +21,11 @@
   method declarations. CI rejects declaration, catalog, and MCP schema drift.
 - Documentation contract maps five source areas and seven feature surfaces to
   durable docs and test evidence.
-- Latest local verification on 2026-07-26: Ruff passed, 128 tests passed,
+- Routine Dependabot version branches are disabled for Python and GitHub
+  Actions; security updates remain enabled. Release Actions use verified
+  updates, and the single Grype exception is bound to the patched PyPI Action
+  commit instead of suppressing the package broadly.
+- Latest local verification on 2026-07-27: Ruff passed, 132 tests passed,
   generated documentation is current, sdist/wheel build passed, and Flyto2
   Indexer strict full-scan passed 17/17 with no warnings.
 

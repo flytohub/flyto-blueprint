@@ -1,5 +1,18 @@
 # Decisions
 
+## 2026-07-27 - Keep routine dependency branches out of the way
+
+Decision: disable Dependabot's weekly version-update PRs for Python and GitHub
+Actions with `open-pull-requests-limit: 0`, while leaving repository security
+updates enabled. Keep release Actions pinned and tested. If Grype cannot compare
+a patched Action's commit SHA with an advisory's semantic version range, ignore
+only the exact advisory, package, package type, and patched SHA.
+
+Reason: a growing branch list hides real work and stale PRs waste CI. Turning
+off security updates would solve the wrong problem, while a broad scanner ignore
+could hide a future vulnerable Action. The narrow policy keeps urgent updates
+visible without recreating routine version-bump branches.
+
 ## 2026-07-26 - Token reduction must be measurable
 
 Decision: claim zero **planner** calls only when a trusted runtime records
