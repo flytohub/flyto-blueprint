@@ -74,6 +74,18 @@ assertion pass rate, p50/p95 duration, and measured zero-planner-call reuse. Det
 samples keep only an allowlist of execution facts and are capped to the latest
 100 entries; prompts, parameters, API keys, and raw results are not accepted.
 
+An Evidence Card answers “did this procedure work?” The versioned
+[effectiveness benchmark](docs/BENCHMARKING.md) answers the harder question:
+“does Blueprint help an agent without making it less reliable?” It compares the
+same tasks, model, environment, and random seeds across four modes, including
+ordinary conversation, Traditional Chinese and Japanese negation, hostile
+evidence, incompatible reuse, and a sealed holdout.
+
+The benchmark result directory is currently empty. That is intentional and
+means this repository makes **no benchmark performance claim yet**. A future
+claim must include reproducible run records, a generated scorecard, at least 20
+paired trials per task, and a green CI evidence gate.
+
 Official links: [flyto2.com](https://flyto2.com) ·
 [Docs](https://docs.flyto2.com/blueprint/) ·
 [PyPI](https://pypi.org/project/flyto-blueprint/) ·
@@ -155,7 +167,9 @@ instead of generating a brand-new sequence every time. Typical use cases:
 The package facade, engine lifecycle, storage protocol, scoring behavior, and
 complete declaration inventory are documented in [API](docs/API.md) and the
 [generated Python reference](docs/reference/python-api.md). MCP consumers should
-use the [generated tool reference](docs/reference/mcp-tools.md).
+use the [generated tool reference](docs/reference/mcp-tools.md). Benchmark
+hosts should start with the plain-language
+[benchmark guide](docs/BENCHMARKING.md).
 
 ## Architecture
 
@@ -181,6 +195,9 @@ never place them in blueprint YAML or committed examples.
 ```bash
 python -m pytest
 python -m ruff check .
+python scripts/benchmark-scorecard.py verify-results \
+  --suite benchmarks/suites/blueprint-effectiveness-v1.yaml \
+  --results-dir benchmarks/results
 ```
 
 ## Contributing
@@ -192,7 +209,3 @@ storage backends, docs, or examples. Security reports should go to
 ## License
 
 Apache-2.0
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=flytohub/flyto-blueprint&type=Date)](https://star-history.com/#flytohub/flyto-blueprint&Date)

@@ -1,5 +1,23 @@
 # Decisions
 
+## 2026-07-27 - Performance claims require paired host evidence
+
+Decision: evaluate the same tasks in `agent_baseline`,
+`flyto_no_blueprint`, `blueprint_cold`, and `blueprint_warm` modes with one
+model, environment, dataset commit, and paired seed. Accept only
+`ci_verified` records, include adversarial and sealed-holdout tasks, publish
+planner-only measurements, and require warm reuse to pass against both the
+agent baseline and Flyto2 without Blueprint. Rebuild committed scorecards in
+CI. Gate token reduction on the exact paired 95% confidence lower bound, not
+only a point estimate. Treat an empty result directory as no claim.
+
+Reason: a successful demo or a self-reported token number cannot separate
+Blueprint's effect from model choice, environment drift, lucky sampling,
+unsafe routing, or false reuse. Paired identity checks and explicit reliability
+gates make future claims falsifiable while keeping the host execution boundary
+honest. The second baseline prevents Flyto2 routing gains from being
+misattributed to Blueprint.
+
 ## 2026-07-27 - Keep routine dependency branches out of the way
 
 Decision: disable Dependabot's weekly version-update PRs for Python and GitHub

@@ -22,6 +22,9 @@ dependencies = [
     "pydantic>=2.4.0",
 ]
 
+[project.scripts]
+flyto-blueprint-benchmark = "flyto_blueprint.benchmark:main"
+
 [project.optional-dependencies]
 core = ["flyto-core>=2.12.0"]
 firestore = ["google-cloud-firestore", "firebase-admin"]

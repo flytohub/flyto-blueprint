@@ -6,6 +6,8 @@
   storage, trust, and execution boundaries.
 - [Feature reference](FEATURES.md) explains catalog, search, composition,
   learning, scoring, storage, and MCP behavior.
+- [Benchmarking](BENCHMARKING.md) explains how to test whether Blueprint lowers
+  planner use without hiding routing mistakes or reliability regressions.
 - [Python API](API.md) defines supported exports, methods, return shapes, side
   effects, and storage contracts.
 - [Generated reference](reference/README.md) inventories every implementation

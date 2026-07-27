@@ -26,6 +26,11 @@
 
 ### Added
 
+- Added a versioned four-mode effectiveness suite, strict paired-run validator,
+  deterministic scorecard CLI, statistical reliability/token/latency gates,
+  adversarial multilingual cases, a sealed holdout commitment, and CI
+  verification for committed evidence. No benchmark result is committed yet,
+  so this adds a proof mechanism rather than a performance claim.
 - Added explicit integrity-checked Blueprint export/import, optional
   host-controlled HMAC publisher signatures, semantic deduplication, sensitive
   metadata rejection, and quarantine for unsigned or unknown publishers.

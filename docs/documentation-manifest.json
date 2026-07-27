@@ -11,6 +11,7 @@
     "security": "SECURITY.md",
     "changelog": "CHANGELOG.md",
     "feature_reference": "docs/FEATURES.md",
+    "benchmarking": "docs/BENCHMARKING.md",
     "whitepaper": "docs/WHITEPAPER.md",
     "source_reference": "docs/reference/python-api.md",
     "source_reference_exclude": [
@@ -58,6 +59,13 @@
       "description": "Source-backed generation for implementation declarations, packaged catalog entries, and MCP input schemas.",
       "paths": ["scripts/generate-reference.py"],
       "documentation": ["docs/reference/README.md", "docs/reference/python-api.md", "docs/reference/blueprint-catalog.md", "docs/reference/mcp-tools.md"]
+    },
+    {
+      "id": "benchmark-evidence",
+      "description": "Versioned paired-run validation, deterministic scorecards, statistical gates, and committed evidence integrity checks.",
+      "paths": ["flyto_blueprint/benchmark.py", "scripts/benchmark-scorecard.py", "benchmarks/**"],
+      "documentation": ["docs/BENCHMARKING.md", "benchmarks/results/README.md"],
+      "tests": ["tests/test_benchmark.py"]
     }
   ],
   "feature_surfaces": [
@@ -140,6 +148,17 @@
       "source": ["scripts/generate-reference.py"],
       "documentation": ["docs/README.md", "docs/reference/README.md"],
       "verification": ["python3 scripts/generate-reference.py --check"]
+    },
+    {
+      "id": "benchmark-proof",
+      "title": "Paired Blueprint effectiveness evidence",
+      "kind": "operations",
+      "status": "experimental",
+      "description": "Checks host-executed four-mode evidence for comparable identity, task coverage, reliability, planner-token reduction, latency, assertions, and false reuse without inventing a claim when results are absent.",
+      "source": ["flyto_blueprint/benchmark.py", "scripts/benchmark-scorecard.py", "benchmarks/**"],
+      "documentation": ["docs/BENCHMARKING.md", "README.md#proof-not-vibes"],
+      "tests": ["tests/test_benchmark.py"],
+      "verification": ["python scripts/benchmark-scorecard.py verify-results --suite benchmarks/suites/blueprint-effectiveness-v1.yaml --results-dir benchmarks/results"]
     }
   ]
 }

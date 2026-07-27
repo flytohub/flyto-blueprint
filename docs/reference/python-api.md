@@ -2,13 +2,14 @@
 
 # Python Implementation Reference
 
-Generated inventory: **19 modules** and **116 class/function/method declarations**.
+Generated inventory: **20 modules** and **155 class/function/method declarations**.
 
 ## Modules
 
 | Module | Lines | Declarations | Responsibility |
 |---|---:|---:|---|
 | [`flyto_blueprint/__init__.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/__init__.py#L1) | 22 | 1 | flyto-blueprint — Self-evolving workflow pattern engine. |
+| [`flyto_blueprint/benchmark.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1) | 1186 | 39 | Reproducible scorecards for host-executed Blueprint benchmarks. |
 | [`flyto_blueprint/compose.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/compose.py#L1) | 307 | 6 | Compose block expansion for blueprints. |
 | [`flyto_blueprint/engine.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/engine.py#L1) | 279 | 13 | BlueprintEngine — orchestrator for loading, searching, expanding, and evolving blueprints. |
 | [`flyto_blueprint/fingerprint.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/fingerprint.py#L1) | 21 | 1 | Structural fingerprinting for blueprint deduplication. |
@@ -33,6 +34,50 @@ Generated inventory: **19 modules** and **116 class/function/method declarations
 | Kind | Signature | Responsibility | Source |
 |---|---|---|---|
 | function | `def get_engine(storage: StorageBackend=None) -> BlueprintEngine` | Get or create the default BlueprintEngine singleton. On first call, *storage* sets the backend. Subsequent calls return the same instance regardless of the *storage* argument. | [`flyto_blueprint/__init__.py:13`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/__init__.py#L13) |
+
+## `flyto_blueprint/benchmark.py`
+
+| Kind | Signature | Responsibility | Source |
+|---|---|---|---|
+| class | `class BenchmarkValidationError(ValueError)` | Raised when benchmark evidence is malformed or cannot be compared. | [`flyto_blueprint/benchmark.py:97`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L97) |
+| class | `class _UniqueKeyLoader(yaml.SafeLoader)` | Safe YAML loader that rejects ambiguous duplicate mapping keys. | [`flyto_blueprint/benchmark.py:101`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L101) |
+| function | `def _construct_unique_mapping(loader: _UniqueKeyLoader, node: yaml.MappingNode, deep: bool=False) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:105`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L105) |
+| function | `def canonical_digest(value: Any) -> str` | Return a stable SHA-256 digest for JSON-compatible data. | [`flyto_blueprint/benchmark.py:130`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L130) |
+| function | `def task_digest(task: Mapping[str, Any]) -> str` | Return the public task digest or an opaque sealed-task commitment. | [`flyto_blueprint/benchmark.py:142`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L142) |
+| function | `def suite_digest(suite: Mapping[str, Any]) -> str` | Validate and bind a benchmark suite to its exact contents. | [`flyto_blueprint/benchmark.py:158`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L158) |
+| function | `def load_suite(path: str \| Path) -> dict` | Load and validate a versioned YAML benchmark suite. | [`flyto_blueprint/benchmark.py:164`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L164) |
+| function | `def load_runs(path: str \| Path) -> list[dict]` | Load benchmark-run.v1 JSON objects from a JSON Lines file. | [`flyto_blueprint/benchmark.py:177`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L177) |
+| function | `def validate_suite(suite: Mapping[str, Any]) -> None` | Reject ambiguous suites before any score is calculated. | [`flyto_blueprint/benchmark.py:206`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L206) |
+| function | `def describe_suite(suite: Mapping[str, Any]) -> dict` | Return the identities a host must copy into raw run records. | [`flyto_blueprint/benchmark.py:284`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L284) |
+| function | `def build_scorecard(suite: Mapping[str, Any], raw_records: Sequence[Mapping[str, Any]]) -> dict` | Validate paired evidence and build a deterministic benchmark scorecard. | [`flyto_blueprint/benchmark.py:306`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L306) |
+| function | `def verify_result_directory(suite: Mapping[str, Any], results_dir: str \| Path) -> dict` | Rebuild every committed scorecard and report missing or stale evidence. | [`flyto_blueprint/benchmark.py:396`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L396) |
+| function | `def write_scorecard(scorecard: Mapping[str, Any], path: str \| Path) -> None` | Write canonical, reviewable scorecard JSON. | [`flyto_blueprint/benchmark.py:486`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L486) |
+| function | `def main(argv: Sequence[str] \| None=None) -> int` | Run the scorecard, suite-description, or repository verification CLI. | [`flyto_blueprint/benchmark.py:503`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L503) |
+| function | `def _validate_task(task: Any, index: int) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:553`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L553) |
+| function | `def _validate_run(raw_record: Mapping[str, Any], suite: Mapping[str, Any], task_map: Mapping[str, Mapping[str, Any]], expected_suite_digest: str) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:597`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L597) |
+| function | `def _validate_global_identity(records: Sequence[Mapping[str, Any]]) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:698`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L698) |
+| function | `def _validate_pairs(records: Sequence[Mapping[str, Any]]) -> int` | See the linked implementation. | [`flyto_blueprint/benchmark.py:707`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L707) |
+| function | `def _aggregate(records: Sequence[Mapping[str, Any]]) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:741`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L741) |
+| function | `def _compare_modes(baseline_mode: str, baseline: Mapping[str, Any], candidate_mode: str, candidate: Mapping[str, Any], records: Sequence[Mapping[str, Any]]) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:793`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L793) |
+| function | `def _build_gate(suite: Mapping[str, Any], records: Sequence[Mapping[str, Any]], by_mode: Mapping[str, Mapping[str, Any]], comparisons: Mapping[str, Mapping[str, Any]]) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:845`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L845) |
+| function | `def _check(check_id: str, passed: bool, actual: Any, expected: Any) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:984`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L984) |
+| function | `def _wilson_interval(successes: int, total: int) -> tuple[float, float]` | See the linked implementation. | [`flyto_blueprint/benchmark.py:993`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L993) |
+| function | `def _percentile(values: Sequence[float], quantile: float) -> float \| None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1010`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1010) |
+| function | `def _median(values: Sequence[float]) -> float \| None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1026`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1026) |
+| function | `def _paired_token_reductions(records: Sequence[Mapping[str, Any]], baseline_mode: str, candidate_mode: str) -> list[float]` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1030`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1030) |
+| function | `def _median_confidence_interval(values: Sequence[float], confidence: float=0.95) -> tuple[float \| None, float \| None]` | Return an exact distribution-free confidence interval for a median. | [`flyto_blueprint/benchmark.py:1053`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1053) |
+| function | `def _relative_reduction(candidate: float \| None, baseline: float \| None) -> float \| None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1077`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1077) |
+| function | `def _relative_increase(candidate: float \| None, baseline: float \| None) -> float \| None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1083`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1083) |
+| function | `def _round_ratio(numerator: int, denominator: int) -> float` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1089`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1089) |
+| function | `def _round_optional(value: float \| None) -> float \| None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1093`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1093) |
+| function | `def _reject_unknown_fields(value: Mapping[str, Any], allowed: set[str], label: str) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1097`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1097) |
+| function | `def _require_id(value: Any, label: str) -> str` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1112`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1112) |
+| function | `def _require_text(value: Any, label: str) -> str` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1118`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1118) |
+| function | `def _require_int(value: Any, label: str, *, minimum: int, maximum: int \| None=None) -> int` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1124`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1124) |
+| function | `def _require_number(value: Any, label: str, *, minimum: float, maximum: float \| None=None) -> float` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1138`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1138) |
+| function | `def _reject_json_constant(value: str) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1157`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1157) |
+| function | `def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1161`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1161) |
+| function | `def _print_json(value: Mapping[str, Any], stream: Any=sys.stdout) -> None` | See the linked implementation. | [`flyto_blueprint/benchmark.py:1172`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/benchmark.py#L1172) |
 
 ## `flyto_blueprint/compose.py`
 
