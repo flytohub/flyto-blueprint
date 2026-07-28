@@ -40,7 +40,7 @@
 - Latest full local verification on 2026-07-28: Ruff passed, 182 tests passed,
   generated documentation was current, sdist/wheel build passed, and Flyto2
   Indexer strict full-scan passed 17/17 with no warnings and documentation
-  score 100. The independent Flyto AI benchmark workflow run 30322935702
+  score 100. The independent Flyto2 AI benchmark workflow run 30322935702
   passed all steps; final CI for the evidence/documentation commit remains the
   release gate.
 
