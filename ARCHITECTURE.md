@@ -10,9 +10,16 @@ package API (BlueprintEngine)
   -> packaged YAML blueprints and composition blocks
 
 trusted host benchmark runner
-  -> paired run records
+  -> real coding / HTTP / filesystem / model-backed work
+  -> paired planner + workflow usage records
   -> identity and evidence validation
-  -> deterministic statistical scorecard and CI gate
+  -> deterministic scorecards
+  -> model / hardware / independent-runner / history CI gates
+
+real longitudinal runner
+  -> SQLite learn / reuse / outcome transitions
+  -> immediate retirement and reload check
+  -> digest-bound lifecycle evidence
 ```
 
 Boundary:
@@ -36,10 +43,17 @@ Boundary:
 - `flyto_blueprint.benchmark` does not execute an agent, MCP tool, or workflow.
   A host owns execution and supplies paired facts for the same task, trial,
   model, environment, dataset, and seed.
-- Benchmark scorecards accept only `ci_verified` evidence, compare warm reuse
-  with the agent baseline, and scope token claims to planner usage. This is an
-  explicit trust boundary: record consistency is validated, but provider
-  execution is not cryptographically attested.
+- Benchmark scorecards accept only `ci_verified` evidence and compare warm
+  reuse with both the agent baseline and Flyto2 without Blueprint. V1/v2
+  planner-only evidence remains supported. V3 accepts a full-usage claim only
+  when planner and workflow counters are both present and their totals match.
+- The v3 result directory must keep at least three model families, two hardware
+  families, one independent runner, and one passing historical comparison.
+  This is an explicit trust boundary: record consistency is validated, but
+  provider execution is not cryptographically attested.
+- Longitudinal evidence uses the production Engine and SQLite backend to prove
+  that trusted outcomes change scores, repeated failure retires a Blueprint
+  immediately, and a fresh Engine does not reload it.
 - An empty benchmark result directory means no performance claim exists. A
   claim begins only when versioned raw records and their exactly reproducible,
   threshold-passing scorecard are committed.

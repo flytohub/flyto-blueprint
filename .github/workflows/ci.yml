@@ -49,6 +49,19 @@ jobs:
           --suite benchmarks/suites/blueprint-effectiveness-v2.yaml
           --results-dir benchmarks/results/blueprint-effectiveness-v2
 
+      - name: Benchmark v3 evidence closure
+        run: >-
+          python scripts/benchmark-scorecard.py verify-results
+          --suite benchmarks/suites/blueprint-effectiveness-v3.yaml
+          --results-dir benchmarks/results/blueprint-effectiveness-v3
+
+      - name: Longitudinal learning evidence integrity
+        run: |
+          for evidence in benchmarks/results/longitudinal/*.evidence.json; do
+            python scripts/run_longitudinal_evidence.py verify \
+              --evidence "${evidence}"
+          done
+
       - name: Build package
         run: python -m build
 

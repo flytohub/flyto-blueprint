@@ -1,5 +1,22 @@
 # Decisions
 
+## 2026-07-28 - Full-usage claims require diversity and history
+
+Decision: add `benchmark-run.v2` and `benchmark-scorecard.v2` for separately
+observed planner and workflow usage. Require exact total arithmetic, real
+workload success, zero manual corrections, and the existing reliability /
+false-reuse gates. A committed v3 result set must include at least three model
+families, two hardware families, one independent runner, and one same-series
+historical comparison. Keep raw records and rebuild every scorecard in CI.
+Verify learning separately through a real SQLite
+learn→reuse→failure→retirement→reload lifecycle.
+
+Reason: one local model run can show a promising number but cannot establish
+portability or stability. Planner-only accounting can also hide a model-backed
+workflow step. Diversity, native workflow counters, an independent trust
+boundary, history gates, and lifecycle evidence make deletion, drift,
+under-counting, and “learning” that does not survive failure visible.
+
 ## 2026-07-27 - Performance claims require paired host evidence
 
 Decision: evaluate the same tasks in `agent_baseline`,

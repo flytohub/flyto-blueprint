@@ -1,0 +1,69 @@
+{
+  "blueprint_id": "longitudinal-real-lifecycle",
+  "checks": [
+    {
+      "id": "learned_and_persisted",
+      "passed": true
+    },
+    {
+      "id": "trusted_success_increased_score",
+      "passed": true
+    },
+    {
+      "id": "reused_without_relearning",
+      "passed": true
+    },
+    {
+      "id": "trusted_failures_decreased_score",
+      "passed": true
+    },
+    {
+      "id": "retired_below_threshold",
+      "passed": true
+    },
+    {
+      "id": "retirement_effective_immediately",
+      "passed": true
+    },
+    {
+      "id": "retirement_persisted_after_reload",
+      "passed": true
+    }
+  ],
+  "database_digest": "sha256:726d65bf951768d9c16836885a7b31d97f62cab2e89211742814c6ecf7e8ec70",
+  "downgrade_scores": [
+    80,
+    70,
+    60,
+    50,
+    40,
+    30,
+    20,
+    10,
+    0
+  ],
+  "evidence_digest": "sha256:5f2c57b78d96d139a44bd78563e79ecbbd44106b1a804928bdb8fb3f3db2977c",
+  "initial_score": 70,
+  "limitations": [
+    "This evidence proves the local Blueprint/SQLite lifecycle; it does not claim that every external workflow will succeed."
+  ],
+  "persisted_use_count": 20,
+  "promotion_scores": [
+    75,
+    80,
+    85,
+    90
+  ],
+  "proof_status": "verified",
+  "repository_commit": "9f45b73415993fb227f44ad8d0f06539ca082d62",
+  "retired": true,
+  "retired_score": 0,
+  "reuse_trials": 20,
+  "run_finished_at": "2026-07-28T02:39:05Z",
+  "run_id": "local-real-lifecycle",
+  "run_started_at": "2026-07-28T02:39:02Z",
+  "schema_version": "blueprint-longitudinal-evidence.v1",
+  "storage_backend": "sqlite",
+  "successful_reuses": 20,
+  "trusted_failure_reports": 9
+}

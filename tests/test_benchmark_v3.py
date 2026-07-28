@@ -267,3 +267,26 @@ def test_v3_directory_closes_model_hardware_runner_and_history_gates(
         "linux-x86-64",
     ]
     assert len(result["closure"]["history_comparisons"]) >= 1
+
+
+def test_committed_v3_evidence_closes_all_diversity_gates():
+    suite = load_suite(SUITE_PATH)
+
+    result = verify_result_directory(
+        suite,
+        ROOT / "benchmarks/results/blueprint-effectiveness-v3",
+    )
+
+    assert result["passed"] is True
+    assert result["verified_count"] == 5
+    assert result["closure"]["model_families"] == [
+        "gemma3",
+        "llama3.2",
+        "qwen3",
+    ]
+    assert result["closure"]["hardware_families"] == [
+        "apple-silicon",
+        "linux-x86-64",
+    ]
+    assert result["closure"]["independent_runner_count"] == 1
+    assert result["closure"]["history_comparisons"][0]["passed"] is True

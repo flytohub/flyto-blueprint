@@ -60,11 +60,11 @@ print(result["data"]["steps"])
 | Shared knowledge | Easy to trust too quickly | Imported bundles start quarantined unless the host verifies them |
 | Bad patterns | May keep getting suggested | Failures lower trusted scores and can retire the pattern |
 
-The token claim is deliberately narrow: Blueprint records
-`planner_model_calls_used=0` when Flyto2 AI takes the deterministic exact-reuse
-path. That proves the outer agent did not ask a model to plan the job again. It
-does **not** prove that a Blueprint containing an `llm.*` step used zero tokens.
-Workflow-wide token use stays unknown until every model-backed step reports it.
+An individual Evidence Card stays deliberately narrow:
+`planner_model_calls_used=0` means exact reuse skipped outer-agent planning; it
+does **not** pretend an `llm.*` workflow step was free. The v3 benchmark goes
+further by recording native planner and workflow counters separately, checking
+their arithmetic, and making a full-usage claim only when both are observed.
 
 ## Proof, not vibes
 
@@ -81,18 +81,23 @@ same tasks, model, environment, and random seeds across four modes, including
 ordinary conversation, Traditional Chinese and Japanese negation, hostile
 evidence, incompatible reuse, and a sealed holdout.
 
-The first complete run is now published: 10 tasks, 20 paired trials per task,
-four modes, and 800 records. Against Flyto2 without Blueprint, warm verified
-reuse cut observed planner tokens from 10,660 to 2,880 (72.98%), cut planner
-model calls from 80 to 20 (75%), and raised benchmark assertion success from
-60% to 100%. False reuse stayed at zero.
+The published v3 result is 10 tasks × 20 trials × four paired modes across five
+runs: 4,000 raw records, three model families, Apple Silicon and Linux x86-64,
+and one independent GitHub runner. The workloads perform real Python file/test
+execution, real loopback HTTP browser and API I/O, real filesystem persistence,
+and real Ollama inference. No planner or workflow call is mocked.
 
-Those are local Qwen3 8B planner measurements, not a claim about every agent or
-workflow. Read the short
-[result story](benchmarks/results/blueprint-effectiveness-v2/README.md), inspect
-the [raw measurements](benchmarks/results/blueprint-effectiveness-v2/ollama-flyto-qwen3-8b-2026-07-28.runs.jsonl),
-or rebuild the
-[scorecard](benchmarks/results/blueprint-effectiveness-v2/ollama-flyto-qwen3-8b-2026-07-28.scorecard.json).
+Across all five runs, warm verified reuse kept benchmark and workload success
+at 100%, with zero manual corrections and zero false reuse. Compared with
+Flyto2 routing without Blueprint, total observed model tokens fell by
+71.25–72.90%. Compared with the generic agent baseline, they fell by
+84.80–85.78%. The paired 95% lower bound for the Blueprint-specific reduction
+was 63.29–64.43%, so the result does not depend on the point estimate alone.
+
+That is evidence for this controlled suite, these model bytes, and these hosts;
+it is not a claim that every task gets 70% cheaper. Read the
+[one-screen result story](benchmarks/results/blueprint-effectiveness-v3/README.md),
+inspect the committed raw JSONL, or rerun the deterministic closure verifier.
 
 Official links: [flyto2.com](https://flyto2.com) ·
 [Docs](https://docs.flyto2.com/blueprint/) ·
@@ -209,6 +214,11 @@ python scripts/benchmark-scorecard.py verify-results \
 python scripts/benchmark-scorecard.py verify-results \
   --suite benchmarks/suites/blueprint-effectiveness-v2.yaml \
   --results-dir benchmarks/results/blueprint-effectiveness-v2
+python scripts/benchmark-scorecard.py verify-results \
+  --suite benchmarks/suites/blueprint-effectiveness-v3.yaml \
+  --results-dir benchmarks/results/blueprint-effectiveness-v3
+python scripts/run_longitudinal_evidence.py verify \
+  --evidence benchmarks/results/longitudinal/local-longitudinal.evidence.json
 ```
 
 ## Contributing
