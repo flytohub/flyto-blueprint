@@ -22,7 +22,9 @@ import yaml
 
 SUITE_SCHEMA = "benchmark-suite.v1"
 RUN_SCHEMA = "benchmark-run.v1"
+RUN_SCHEMA_V2 = "benchmark-run.v2"
 SCORECARD_SCHEMA = "benchmark-scorecard.v1"
+SCORECARD_SCHEMA_V2 = "benchmark-scorecard.v2"
 REQUIRED_MODES = (
     "agent_baseline",
     "flyto_no_blueprint",
@@ -30,12 +32,26 @@ REQUIRED_MODES = (
     "blueprint_warm",
 )
 ALLOWED_SPLITS = {"public_eval", "adversarial", "sealed_holdout"}
+ALLOWED_RUNNER_KINDS = {"local", "independent_ci"}
+ALLOWED_WORKLOAD_KINDS = {
+    "api",
+    "browser",
+    "coding",
+    "compatibility",
+    "conversation",
+    "llm",
+    "sealed",
+    "trust",
+}
 VERIFIED_EVIDENCE_TIER = "ci_verified"
 
 _DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 _COMMIT_RE = re.compile(r"^[0-9a-f]{7,64}$")
 _ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,99}$")
 _SAFE_TEXT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,199}$")
+_TIMESTAMP_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z$"
+)
 _SUITE_FIELDS = {
     "schema_version",
     "suite_id",
@@ -45,6 +61,7 @@ _SUITE_FIELDS = {
     "trusted_evidence_tier",
     "thresholds",
     "tasks",
+    "measurement",
 }
 _THRESHOLD_FIELDS = {
     "min_trials_per_task",
@@ -65,6 +82,19 @@ _TASK_FIELDS = {
     "assertions",
     "tags",
     "task_digest",
+}
+_MEASUREMENT_FIELDS = {
+    "scope",
+    "required_workload_kinds",
+    "min_full_token_reduction",
+    "max_manual_corrections",
+    "min_workload_success_rate",
+    "min_model_families",
+    "min_hardware_families",
+    "require_independent_runner",
+    "min_history_comparisons",
+    "max_history_success_drop",
+    "max_history_total_token_increase",
 }
 _RUN_FIELDS = {
     "schema_version",
@@ -91,6 +121,28 @@ _RUN_FIELDS = {
     "duration_ms",
     "false_reuse",
     "visible_cost_usd",
+}
+_RUN_V2_FIELDS = _RUN_FIELDS | {
+    "run_id",
+    "run_started_at",
+    "host_id",
+    "hardware_family",
+    "runner_kind",
+    "model_family",
+    "workload_kind",
+    "workload_digest",
+    "workload_success",
+    "workflow_input_tokens",
+    "workflow_output_tokens",
+    "workflow_model_calls",
+    "workflow_duration_ms",
+    "manual_corrections",
+    "planner_visible_cost_usd",
+    "workflow_visible_cost_usd",
+    "total_input_tokens",
+    "total_output_tokens",
+    "total_model_calls",
+    "total_visible_cost_usd",
 }
 
 
@@ -261,6 +313,14 @@ def validate_suite(suite: Mapping[str, Any]) -> None:
             "required_splits must be a unique, non-empty list of known splits"
         )
 
+    measurement = suite.get("measurement")
+    if suite["suite_version"] >= 3 and not isinstance(measurement, Mapping):
+        raise BenchmarkValidationError(
+            "suite version 3 or newer requires a measurement contract"
+        )
+    if measurement is not None:
+        _validate_measurement(measurement)
+
     tasks = suite.get("tasks")
     if not isinstance(tasks, list) or not tasks:
         raise BenchmarkValidationError("tasks must be a non-empty list")
@@ -281,10 +341,51 @@ def validate_suite(suite: Mapping[str, Any]) -> None:
         )
 
 
+def _validate_measurement(measurement: Mapping[str, Any]) -> None:
+    _reject_unknown_fields(measurement, _MEASUREMENT_FIELDS, "measurement")
+    if measurement.get("scope") != "full_observed_model_usage":
+        raise BenchmarkValidationError(
+            "measurement scope must be full_observed_model_usage"
+        )
+    kinds = measurement.get("required_workload_kinds")
+    if (
+        not isinstance(kinds, list)
+        or not kinds
+        or len(kinds) != len(set(kinds))
+        or not set(kinds).issubset(ALLOWED_WORKLOAD_KINDS)
+    ):
+        raise BenchmarkValidationError(
+            "required_workload_kinds must be a unique non-empty list"
+        )
+    for field in (
+        "min_full_token_reduction",
+        "min_workload_success_rate",
+        "max_history_success_drop",
+        "max_history_total_token_increase",
+    ):
+        _require_number(
+            measurement.get(field),
+            field,
+            minimum=0,
+            maximum=1,
+        )
+    for field in (
+        "max_manual_corrections",
+        "min_model_families",
+        "min_hardware_families",
+        "min_history_comparisons",
+    ):
+        _require_int(measurement.get(field), field, minimum=0)
+    if not isinstance(measurement.get("require_independent_runner"), bool):
+        raise BenchmarkValidationError(
+            "require_independent_runner must be boolean"
+        )
+
+
 def describe_suite(suite: Mapping[str, Any]) -> dict:
     """Return the identities a host must copy into raw run records."""
     validate_suite(suite)
-    return {
+    summary = {
         "schema_version": SUITE_SCHEMA,
         "suite_id": suite["suite_id"],
         "suite_version": suite["suite_version"],
@@ -301,6 +402,7 @@ def describe_suite(suite: Mapping[str, Any]) -> dict:
             for task in suite["tasks"]
         ],
     }
+    return summary
 
 
 def build_scorecard(
@@ -318,6 +420,16 @@ def build_scorecard(
         _validate_run(record, suite, task_map, expected_suite_digest)
         for record in raw_records
     ]
+    run_schemas = {record["schema_version"] for record in records}
+    if len(run_schemas) != 1:
+        raise BenchmarkValidationError(
+            "one scorecard cannot mix run schema versions"
+        )
+    full_scope = run_schemas == {RUN_SCHEMA_V2}
+    if bool(suite.get("measurement")) != full_scope:
+        raise BenchmarkValidationError(
+            "measurement suites require benchmark-run.v2 evidence"
+        )
     _validate_global_identity(records)
     pair_count = _validate_pairs(records)
 
@@ -359,35 +471,62 @@ def build_scorecard(
     model_id = ordered_records[0]["model_id"]
     environment_digest = ordered_records[0]["environment_digest"]
 
+    provenance = {
+        "dataset_commit": dataset_commit,
+        "model_id": model_id,
+        "environment_digest": environment_digest,
+        "evidence_tier": VERIFIED_EVIDENCE_TIER,
+        "record_count": len(ordered_records),
+        "pair_count": pair_count,
+    }
+    limitations = [
+        (
+            "The host executes tasks; this scorecard validates only the "
+            "records supplied by that trusted boundary."
+        ),
+    ]
+    if full_scope:
+        first = ordered_records[0]
+        provenance.update(
+            {
+                "run_id": first["run_id"],
+                "run_started_at": first["run_started_at"],
+                "host_id": first["host_id"],
+                "hardware_family": first["hardware_family"],
+                "runner_kind": first["runner_kind"],
+                "model_family": first["model_family"],
+            }
+        )
+        limitations.append(
+            "Visible cost is zero for local Ollama and is not a cloud-price estimate."
+        )
+    else:
+        limitations.append(
+            (
+                "Planner tokens exclude model-backed workflow steps and any "
+                "provider-internal usage the host cannot observe."
+            )
+        )
+
     scorecard = {
-        "schema_version": SCORECARD_SCHEMA,
+        "schema_version": (
+            SCORECARD_SCHEMA_V2 if full_scope else SCORECARD_SCHEMA
+        ),
         "suite_id": suite["suite_id"],
         "suite_version": suite["suite_version"],
         "suite_digest": expected_suite_digest,
         "evidence_digest": canonical_digest(ordered_records),
         "proof_status": gate["status"],
-        "claim_scope": "planner_model_usage_only",
-        "provenance": {
-            "dataset_commit": dataset_commit,
-            "model_id": model_id,
-            "environment_digest": environment_digest,
-            "evidence_tier": VERIFIED_EVIDENCE_TIER,
-            "record_count": len(ordered_records),
-            "pair_count": pair_count,
-        },
+        "claim_scope": (
+            "full_observed_model_usage"
+            if full_scope
+            else "planner_model_usage_only"
+        ),
+        "provenance": provenance,
         "modes": by_mode,
         "comparisons": comparisons,
         "gate": gate,
-        "limitations": [
-            (
-                "The host executes tasks; this scorecard validates only the "
-                "records supplied by that trusted boundary."
-            ),
-            (
-                "Planner tokens exclude model-backed workflow steps and any "
-                "provider-internal usage the host cannot observe."
-            ),
-        ],
+        "limitations": limitations,
     }
     scorecard["scorecard_digest"] = canonical_digest(scorecard)
     return scorecard
@@ -441,6 +580,7 @@ def verify_result_directory(
 
     issues = []
     verified = 0
+    verified_scorecards = []
     for run_path in run_files:
         prefix = run_path.name[: -len(".runs.jsonl")]
         scorecard_path = run_path.with_name(prefix + ".scorecard.json")
@@ -473,14 +613,134 @@ def verify_result_directory(
             )
             continue
         verified += 1
+        verified_scorecards.append(generated)
 
-    return {
+    closure = None
+    if not issues and suite.get("measurement") is not None:
+        closure, closure_issues = _verify_diversity_and_history(
+            verified_scorecards,
+            suite["measurement"],
+        )
+        issues.extend(closure_issues)
+
+    result = {
         "passed": not issues,
         "status": "verified" if not issues else "failed",
         "result_count": len(run_files),
         "verified_count": verified,
         "issues": issues,
     }
+    if closure is not None:
+        result["closure"] = closure
+    return result
+
+
+def _verify_diversity_and_history(
+    scorecards: Sequence[Mapping[str, Any]],
+    measurement: Mapping[str, Any],
+) -> tuple[dict, list[str]]:
+    model_families = {
+        card["provenance"]["model_family"] for card in scorecards
+    }
+    hardware_families = {
+        card["provenance"]["hardware_family"] for card in scorecards
+    }
+    independent_count = sum(
+        card["provenance"]["runner_kind"] == "independent_ci"
+        for card in scorecards
+    )
+    issues = []
+    if len(model_families) < measurement["min_model_families"]:
+        issues.append(
+            "model diversity is {} but at least {} families are required".format(
+                len(model_families),
+                measurement["min_model_families"],
+            )
+        )
+    if len(hardware_families) < measurement["min_hardware_families"]:
+        issues.append(
+            "hardware diversity is {} but at least {} families are required".format(
+                len(hardware_families),
+                measurement["min_hardware_families"],
+            )
+        )
+    if measurement["require_independent_runner"] and independent_count == 0:
+        issues.append("at least one independent_ci result is required")
+
+    series: dict[tuple[str, str, str], list[Mapping[str, Any]]] = {}
+    for card in scorecards:
+        provenance = card["provenance"]
+        key = (
+            provenance["model_family"],
+            provenance["hardware_family"],
+            provenance["runner_kind"],
+        )
+        series.setdefault(key, []).append(card)
+
+    comparisons = []
+    for key, cards in sorted(series.items()):
+        ordered = sorted(
+            cards,
+            key=lambda card: (
+                card["provenance"]["run_started_at"],
+                card["provenance"]["run_id"],
+            ),
+        )
+        for previous, current in zip(ordered, ordered[1:]):
+            old = previous["modes"]["blueprint_warm"]
+            new = current["modes"]["blueprint_warm"]
+            success_drop = round(
+                old["success_rate"] - new["success_rate"],
+                4,
+            )
+            token_increase = _relative_increase(
+                new["total_tokens_total"],
+                old["total_tokens_total"],
+            )
+            passed = (
+                success_drop <= measurement["max_history_success_drop"]
+                and token_increase is not None
+                and token_increase
+                <= measurement["max_history_total_token_increase"]
+            )
+            comparison = {
+                "series": {
+                    "model_family": key[0],
+                    "hardware_family": key[1],
+                    "runner_kind": key[2],
+                },
+                "previous_run_id": previous["provenance"]["run_id"],
+                "current_run_id": current["provenance"]["run_id"],
+                "success_drop": success_drop,
+                "total_token_increase": token_increase,
+                "passed": passed,
+            }
+            comparisons.append(comparison)
+            if not passed:
+                issues.append(
+                    "history regression {} -> {}".format(
+                        comparison["previous_run_id"],
+                        comparison["current_run_id"],
+                    )
+                )
+    if len(comparisons) < measurement["min_history_comparisons"]:
+        issues.append(
+            "history has {} comparison(s), expected at least {}".format(
+                len(comparisons),
+                measurement["min_history_comparisons"],
+            )
+        )
+
+    return (
+        {
+            "model_families": sorted(model_families),
+            "hardware_families": sorted(hardware_families),
+            "independent_runner_count": independent_count,
+            "history_comparisons": comparisons,
+            "passed": not issues,
+        },
+        issues,
+    )
 
 
 def write_scorecard(scorecard: Mapping[str, Any], path: str | Path) -> None:
@@ -602,15 +862,27 @@ def _validate_run(
 ) -> dict:
     if not isinstance(raw_record, Mapping):
         raise BenchmarkValidationError("every run must be an object")
-    _reject_unknown_fields(raw_record, _RUN_FIELDS, "run")
-    missing = _RUN_FIELDS - {"visible_cost_usd"} - set(raw_record)
+    schema = raw_record.get("schema_version")
+    if schema == RUN_SCHEMA:
+        allowed_fields = _RUN_FIELDS
+        optional_fields = {"visible_cost_usd"}
+    elif schema == RUN_SCHEMA_V2:
+        allowed_fields = _RUN_V2_FIELDS
+        optional_fields = set()
+    else:
+        raise BenchmarkValidationError(
+            "run schema_version must be {} or {}".format(
+                RUN_SCHEMA,
+                RUN_SCHEMA_V2,
+            )
+        )
+    _reject_unknown_fields(raw_record, allowed_fields, "run")
+    missing = allowed_fields - optional_fields - set(raw_record)
     if missing:
         raise BenchmarkValidationError(
             "run is missing field(s): {}".format(", ".join(sorted(missing)))
         )
     record = dict(raw_record)
-    if record["schema_version"] != RUN_SCHEMA:
-        raise BenchmarkValidationError("run schema_version must be " + RUN_SCHEMA)
     if record["suite_id"] != suite["suite_id"]:
         raise BenchmarkValidationError("run suite_id does not match the suite")
     if record["suite_digest"] != expected_suite_digest:
@@ -692,11 +964,98 @@ def _validate_run(
             minimum=0,
             maximum=1_000_000,
         )
+    if schema == RUN_SCHEMA_V2:
+        _validate_full_scope_run(record)
     return record
 
 
+def _validate_full_scope_run(record: Mapping[str, Any]) -> None:
+    for field in ("run_id", "host_id", "hardware_family", "model_family"):
+        _require_id(record[field], field)
+    if (
+        not isinstance(record["run_started_at"], str)
+        or not _TIMESTAMP_RE.fullmatch(record["run_started_at"])
+    ):
+        raise BenchmarkValidationError(
+            "run_started_at must be a UTC ISO-8601 timestamp"
+        )
+    if record["runner_kind"] not in ALLOWED_RUNNER_KINDS:
+        raise BenchmarkValidationError("runner_kind is not supported")
+    if record["workload_kind"] not in ALLOWED_WORKLOAD_KINDS:
+        raise BenchmarkValidationError("workload_kind is not supported")
+    if (
+        not isinstance(record["workload_digest"], str)
+        or not _DIGEST_RE.fullmatch(record["workload_digest"])
+    ):
+        raise BenchmarkValidationError("workload_digest must be SHA-256")
+    if not isinstance(record["workload_success"], bool):
+        raise BenchmarkValidationError("workload_success must be boolean")
+    for field in (
+        "workflow_input_tokens",
+        "workflow_output_tokens",
+        "workflow_model_calls",
+        "manual_corrections",
+        "total_input_tokens",
+        "total_output_tokens",
+        "total_model_calls",
+    ):
+        _require_int(record[field], field, minimum=0, maximum=1_000_000_000)
+    for field in (
+        "workflow_duration_ms",
+        "planner_visible_cost_usd",
+        "workflow_visible_cost_usd",
+        "total_visible_cost_usd",
+    ):
+        _require_number(
+            record[field],
+            field,
+            minimum=0,
+            maximum=1_000_000,
+        )
+    if record["total_input_tokens"] != (
+        record["planner_input_tokens"] + record["workflow_input_tokens"]
+    ):
+        raise BenchmarkValidationError(
+            "total_input_tokens must equal planner plus workflow input tokens"
+        )
+    if record["total_output_tokens"] != (
+        record["planner_output_tokens"] + record["workflow_output_tokens"]
+    ):
+        raise BenchmarkValidationError(
+            "total_output_tokens must equal planner plus workflow output tokens"
+        )
+    if record["total_model_calls"] != (
+        record["planner_model_calls"] + record["workflow_model_calls"]
+    ):
+        raise BenchmarkValidationError(
+            "total_model_calls must equal planner plus workflow model calls"
+        )
+    if abs(
+        record["total_visible_cost_usd"]
+        - (
+            record["planner_visible_cost_usd"]
+            + record["workflow_visible_cost_usd"]
+        )
+    ) > 0.000001:
+        raise BenchmarkValidationError(
+            "total_visible_cost_usd must equal planner plus workflow visible cost"
+        )
+
+
 def _validate_global_identity(records: Sequence[Mapping[str, Any]]) -> None:
-    for field in ("dataset_commit", "model_id", "environment_digest"):
+    fields = ["dataset_commit", "model_id", "environment_digest"]
+    if records[0]["schema_version"] == RUN_SCHEMA_V2:
+        fields.extend(
+            [
+                "run_id",
+                "run_started_at",
+                "host_id",
+                "hardware_family",
+                "runner_kind",
+                "model_family",
+            ]
+        )
+    for field in fields:
         values = {record[field] for record in records}
         if len(values) != 1:
             raise BenchmarkValidationError(
@@ -753,7 +1112,7 @@ def _aggregate(records: Sequence[Mapping[str, Any]]) -> dict:
         if "visible_cost_usd" in record
     ]
     lower, upper = _wilson_interval(successes, len(records))
-    return {
+    summary = {
         "run_count": len(records),
         "success_count": successes,
         "success_rate": _round_ratio(successes, len(records)),
@@ -788,6 +1147,50 @@ def _aggregate(records: Sequence[Mapping[str, Any]]) -> dict:
         ),
         "visible_cost_usd_median": _median(visible_costs),
     }
+    if records and records[0]["schema_version"] == RUN_SCHEMA_V2:
+        workflow_tokens = [
+            record["workflow_input_tokens"] + record["workflow_output_tokens"]
+            for record in records
+        ]
+        total_tokens = [
+            record["total_input_tokens"] + record["total_output_tokens"]
+            for record in records
+        ]
+        workload_successes = sum(record["workload_success"] for record in records)
+        summary.update(
+            {
+                "workflow_tokens_total": sum(workflow_tokens),
+                "workflow_tokens_median": _median(workflow_tokens),
+                "workflow_model_calls_total": sum(
+                    record["workflow_model_calls"] for record in records
+                ),
+                "total_tokens_total": sum(total_tokens),
+                "total_tokens_median": _median(total_tokens),
+                "total_model_calls_total": sum(
+                    record["total_model_calls"] for record in records
+                ),
+                "manual_corrections_total": sum(
+                    record["manual_corrections"] for record in records
+                ),
+                "workload_success_count": workload_successes,
+                "workload_success_rate": _round_ratio(
+                    workload_successes,
+                    len(records),
+                ),
+                "workflow_duration_ms_p95": _percentile(
+                    [float(record["workflow_duration_ms"]) for record in records],
+                    0.95,
+                ),
+                "total_visible_cost_usd": round(
+                    sum(
+                        float(record["total_visible_cost_usd"])
+                        for record in records
+                    ),
+                    6,
+                ),
+            }
+        )
+    return summary
 
 
 def _compare_modes(
@@ -805,7 +1208,7 @@ def _compare_modes(
     reduction_lower, reduction_upper = _median_confidence_interval(
         paired_reductions
     )
-    return {
+    comparison = {
         "baseline_mode": baseline_mode,
         "candidate_mode": candidate_mode,
         "success_rate_delta": _round_optional(
@@ -840,6 +1243,43 @@ def _compare_modes(
             baseline["duration_ms_p95"],
         ),
     }
+    if "total_tokens_total" in baseline:
+        total_reductions = _paired_token_reductions(
+            records,
+            baseline_mode,
+            candidate_mode,
+            token_fields=("total_input_tokens", "total_output_tokens"),
+        )
+        total_lower, total_upper = _median_confidence_interval(
+            total_reductions
+        )
+        comparison.update(
+            {
+                "total_token_reduction": _relative_reduction(
+                    candidate["total_tokens_median"],
+                    baseline["total_tokens_median"],
+                ),
+                "total_token_total_reduction": _relative_reduction(
+                    candidate["total_tokens_total"],
+                    baseline["total_tokens_total"],
+                ),
+                "paired_total_token_reduction_median": _median(
+                    total_reductions
+                ),
+                "paired_total_token_reduction_ci_95_lower_bound": total_lower,
+                "paired_total_token_reduction_ci_95_upper_bound": total_upper,
+                "paired_total_token_sample_count": len(total_reductions),
+                "total_model_call_reduction": _relative_reduction(
+                    candidate["total_model_calls_total"],
+                    baseline["total_model_calls_total"],
+                ),
+                "manual_correction_delta": (
+                    candidate["manual_corrections_total"]
+                    - baseline["manual_corrections_total"]
+                ),
+            }
+        )
+    return comparison
 
 
 def _build_gate(
@@ -967,7 +1407,73 @@ def _build_gate(
             ">= {}".format(thresholds["min_assertion_pass_rate"]),
         ),
     ]
+    measurement = suite.get("measurement")
+    if measurement is not None:
+        required_kinds = set(measurement["required_workload_kinds"])
+        observed_kinds = {record["workload_kind"] for record in records}
+        checks.extend(
+            [
+                _check(
+                    "required_workload_kinds",
+                    required_kinds.issubset(observed_kinds),
+                    sorted(observed_kinds),
+                    sorted(required_kinds),
+                ),
+                _check(
+                    "workload_success_rate",
+                    candidate["workload_success_rate"]
+                    >= measurement["min_workload_success_rate"],
+                    candidate["workload_success_rate"],
+                    ">= {}".format(
+                        measurement["min_workload_success_rate"]
+                    ),
+                ),
+                _check(
+                    "manual_corrections",
+                    candidate["manual_corrections_total"]
+                    <= measurement["max_manual_corrections"],
+                    candidate["manual_corrections_total"],
+                    "<= {}".format(measurement["max_manual_corrections"]),
+                ),
+                _check(
+                    "end_to_end_full_token_reduction",
+                    end_to_end[
+                        "paired_total_token_reduction_ci_95_lower_bound"
+                    ]
+                    is not None
+                    and end_to_end[
+                        "paired_total_token_reduction_ci_95_lower_bound"
+                    ]
+                    >= measurement["min_full_token_reduction"],
+                    end_to_end[
+                        "paired_total_token_reduction_ci_95_lower_bound"
+                    ],
+                    ">= {}".format(
+                        measurement["min_full_token_reduction"]
+                    ),
+                ),
+                _check(
+                    "blueprint_effect_full_token_reduction",
+                    blueprint_effect[
+                        "paired_total_token_reduction_ci_95_lower_bound"
+                    ]
+                    is not None
+                    and blueprint_effect[
+                        "paired_total_token_reduction_ci_95_lower_bound"
+                    ]
+                    >= measurement["min_full_token_reduction"],
+                    blueprint_effect[
+                        "paired_total_token_reduction_ci_95_lower_bound"
+                    ],
+                    ">= {}".format(
+                        measurement["min_full_token_reduction"]
+                    ),
+                ),
+            ]
+        )
     evidence_checks = {"task_coverage", "required_splits", "minimum_trials"}
+    if measurement is not None:
+        evidence_checks.add("required_workload_kinds")
     insufficient = any(
         not check["passed"] and check["id"] in evidence_checks
         for check in checks
@@ -1031,12 +1537,17 @@ def _paired_token_reductions(
     records: Sequence[Mapping[str, Any]],
     baseline_mode: str,
     candidate_mode: str,
+    *,
+    token_fields: tuple[str, str] = (
+        "planner_input_tokens",
+        "planner_output_tokens",
+    ),
 ) -> list[float]:
     pairs: dict[tuple[str, int], dict[str, float]] = {}
     for record in records:
         if record["mode"] not in {baseline_mode, candidate_mode}:
             continue
-        tokens = record["planner_input_tokens"] + record["planner_output_tokens"]
+        tokens = record[token_fields[0]] + record[token_fields[1]]
         pairs.setdefault((record["task_id"], record["trial"]), {})[
             record["mode"]
         ] = float(tokens)

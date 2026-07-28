@@ -98,6 +98,8 @@ class BlueprintEngine:
         """Expand a blueprint with args. Returns ``{ok, data, warnings?}``."""
         self._maybe_refresh_learned()
         bp = self._blueprints.get(blueprint_id)
+        if bp and bp.get("retired"):
+            bp = None
         if not bp and self._storage is not None:
             # Fallback: single-doc fetch
             loaded = self._storage.load_one(blueprint_id)

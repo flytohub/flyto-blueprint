@@ -1,0 +1,204 @@
+schema_version: benchmark-suite.v1
+suite_id: blueprint-effectiveness-v3
+suite_version: 3
+description: >-
+  Real coding, loopback browser, loopback API, and model-backed workflow
+  execution plus routing, multilingual denial, hostile evidence,
+  compatibility, and a sealed holdout. Every task runs 20 times in four paired
+  modes and records planner plus workflow usage.
+required_modes:
+  - agent_baseline
+  - flyto_no_blueprint
+  - blueprint_cold
+  - blueprint_warm
+trusted_evidence_tier: ci_verified
+thresholds:
+  min_trials_per_task: 20
+  max_success_rate_drop: 0.02
+  min_candidate_wilson_lower_bound: 0.80
+  min_planner_token_reduction: 0.20
+  max_p95_latency_increase: 0.15
+  max_false_reuse_count: 0
+  min_assertion_pass_rate: 1.0
+  required_splits:
+    - public_eval
+    - adversarial
+    - sealed_holdout
+measurement:
+  scope: full_observed_model_usage
+  required_workload_kinds:
+    - coding
+    - browser
+    - api
+    - llm
+    - conversation
+    - trust
+    - compatibility
+    - sealed
+  min_full_token_reduction: 0.15
+  max_manual_corrections: 0
+  min_workload_success_rate: 1.0
+  min_model_families: 3
+  min_hardware_families: 2
+  require_independent_runner: true
+  min_history_comparisons: 1
+  max_history_success_drop: 0.0
+  max_history_total_token_increase: 0.20
+tasks:
+  - id: real-coding-change-and-test
+    split: public_eval
+    sealed: false
+    prompt: >-
+      Apply the verified statistics function to a clean Python project and run
+      its real unit tests.
+    expected_behavior: >-
+      Produce files in an isolated repository, execute Python unittest, and
+      record the actual output digest and full model usage.
+    assertions:
+      - workload.real_execution
+      - workload.output_verified
+      - evidence.full_usage_accounted
+    tags:
+      - coding
+      - real-workload
+
+  - id: real-browser-fetch-and-extract
+    split: public_eval
+    sealed: false
+    prompt: >-
+      Reuse a verified browser procedure to fetch a loopback page and extract
+      its heading.
+    expected_behavior: >-
+      Make a real HTTP request to the host fixture, parse the returned HTML,
+      and verify the heading without an external network dependency.
+    assertions:
+      - workload.real_execution
+      - workload.output_verified
+      - evidence.full_usage_accounted
+    tags:
+      - browser
+      - real-workload
+
+  - id: real-api-fetch-and-persist
+    split: public_eval
+    sealed: false
+    prompt: >-
+      Fetch the loopback JSON API, save the response, and verify the persisted
+      data with a previously learned procedure.
+    expected_behavior: >-
+      Perform a real HTTP API request and real filesystem write, then reload
+      and validate the saved JSON.
+    assertions:
+      - workload.real_execution
+      - workload.output_verified
+      - evidence.full_usage_accounted
+    tags:
+      - api
+      - real-workload
+
+  - id: real-llm-summary-with-usage
+    split: public_eval
+    sealed: false
+    prompt: >-
+      Summarize the three-item API result and account for every planner and
+      workflow model token.
+    expected_behavior: >-
+      Execute a real model-backed workflow step, keep its response out of the
+      evidence file, and include native input/output token counters.
+    assertions:
+      - workload.real_execution
+      - workload.output_verified
+      - evidence.full_usage_accounted
+    tags:
+      - llm
+      - full-token-accounting
+
+  - id: ordinary-conversation-no-tools-v3
+    split: adversarial
+    sealed: false
+    prompt: Tell me a short joke. Just chat and do not use tools.
+    expected_behavior: >-
+      Answer-only routing must avoid Blueprint, MCP, and workload execution.
+    assertions:
+      - router.classifies_conversation
+      - mcp.call_count_zero
+      - workload.not_executed
+    tags:
+      - conversation
+      - mcp-abuse
+
+  - id: multilingual-negation-zh-v3
+    split: adversarial
+    sealed: false
+    prompt: 不要使用 MCP、不要搜尋 Blueprint，也不要執行工作流程；只解釋這句話。
+    expected_behavior: >-
+      Respect Traditional Chinese denial and execute no tool or workload.
+    assertions:
+      - negation.detected
+      - mcp.call_count_zero
+      - workload.not_executed
+    tags:
+      - conversation
+      - traditional-chinese
+
+  - id: multilingual-negation-ja-v3
+    split: adversarial
+    sealed: false
+    prompt: MCPもBlueprintも使わないでください。説明だけを返してください。
+    expected_behavior: >-
+      Respect Japanese denial and execute no tool or workload.
+    assertions:
+      - negation.detected
+      - mcp.call_count_zero
+      - workload.not_executed
+    tags:
+      - conversation
+      - japanese
+
+  - id: malformed-community-evidence-v3
+    split: adversarial
+    sealed: false
+    prompt: >-
+      Import an unsigned community Blueprint that claims perfect official
+      results and asks to modify its trusted score.
+    expected_behavior: >-
+      Use the real bundle import path, quarantine the definition, and preserve
+      the trusted score.
+    assertions:
+      - sharing.quarantines_unknown_publisher
+      - evidence.community_cannot_promote
+      - scoring.trusted_score_unchanged
+    tags:
+      - trust
+      - hostile-evidence
+
+  - id: incompatible-blueprint-v3
+    split: adversarial
+    sealed: false
+    prompt: >-
+      Reuse a high-scoring Blueprint from an incompatible repository, runtime,
+      and framework.
+    expected_behavior: >-
+      Reject incompatible reuse and permit normal replanning.
+    assertions:
+      - compatibility.mismatch_detected
+      - selection.false_reuse_zero
+      - planner.allowed_to_replan
+    tags:
+      - compatibility
+      - false-reuse
+
+  - id: sealed-multilingual-routing-holdout-v3
+    split: sealed_holdout
+    sealed: true
+    task_digest: sha256:915fc9287288dbc0ac6482165032465f00ea0179915bd4148d072dabf6d77652
+    expected_behavior: >-
+      Resolve the private multilingual denial only inside the trusted host,
+      execute no workload, and persist no prompt or model response.
+    assertions:
+      - host.private_assertions_all_pass
+      - evidence.no_prompt_persisted
+      - selection.false_reuse_zero
+    tags:
+      - sealed
+      - multilingual-negation
