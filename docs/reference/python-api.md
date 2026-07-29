@@ -2,7 +2,7 @@
 
 # Python Implementation Reference
 
-Generated inventory: **21 modules** and **167 class/function/method declarations**.
+Generated inventory: **21 modules** and **168 class/function/method declarations**.
 
 ## Modules
 
@@ -19,7 +19,7 @@ Generated inventory: **21 modules** and **167 class/function/method declarations
 | [`flyto_blueprint/longitudinal.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/longitudinal.py#L1) | 360 | 9 | Real SQLite evidence for the complete Blueprint learning lifecycle. |
 | [`flyto_blueprint/models.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/models.py#L1) | 65 | 3 | Pydantic models for blueprints. |
 | [`flyto_blueprint/scoring.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/scoring.py#L1) | 456 | 11 | Blueprint scoring: outcome reporting, boosting, use tracking, auto-retire. |
-| [`flyto_blueprint/search.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L1) | 158 | 4 | Blueprint listing and search with relevance+quality blending + synonym expansion. |
+| [`flyto_blueprint/search.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L1) | 174 | 5 | Blueprint listing and search with relevance+quality blending + synonym expansion. |
 | [`flyto_blueprint/sharing.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/sharing.py#L1) | 311 | 10 | Portable, integrity-checked Blueprint bundles for explicit sharing. |
 | [`flyto_blueprint/storage/__init__.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/__init__.py#L1) | 6 | 0 | Internal package module. |
 | [`flyto_blueprint/storage/base.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L1) | 49 | 7 | Abstract storage backend for blueprints. |
@@ -200,10 +200,11 @@ Generated inventory: **21 modules** and **167 class/function/method declarations
 
 | Kind | Signature | Responsibility | Source |
 |---|---|---|---|
-| function | `def bp_summary(bp: dict) -> dict` | Build a summary dict for a blueprint. | [`flyto_blueprint/search.py:10`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L10) |
-| function | `def list_blueprints(blueprints: Dict[str, dict]) -> List[dict]` | Return summaries of all non-retired blueprints, sorted by score desc. | [`flyto_blueprint/search.py:45`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L45) |
-| function | `def search_blueprints(query: str, blueprints: Dict[str, dict]) -> List[dict]` | Search blueprints with two-pass scoring: exact words first, synonym fallback. Pass 1: Score using original query words (high confidence). Pass 2: If top score < threshold, boost with synonym-expanded words (lower weight). | [`flyto_blueprint/search.py:56`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L56) |
-| function | `def _score_blueprint(query_words: List[str], synonym_words: List[str], bp: dict) -> float` | Score a single blueprint against query words and synonym expansions. Two-pass scoring: - Pass 1: original query words at full weight. - Pass 2: synonym words at half weight (only when pass 1 has gaps). Returns 0.0 when there are no match... | [`flyto_blueprint/search.py:91`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L91) |
+| function | `def _module_ids(bp: dict) -> List[str]` | Return ordered, unique module IDs without exposing step parameters. | [`flyto_blueprint/search.py:10`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L10) |
+| function | `def bp_summary(bp: dict) -> dict` | Build a summary dict for a blueprint. | [`flyto_blueprint/search.py:25`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L25) |
+| function | `def list_blueprints(blueprints: Dict[str, dict]) -> List[dict]` | Return summaries of all non-retired blueprints, sorted by score desc. | [`flyto_blueprint/search.py:61`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L61) |
+| function | `def search_blueprints(query: str, blueprints: Dict[str, dict]) -> List[dict]` | Search blueprints with two-pass scoring: exact words first, synonym fallback. Pass 1: Score using original query words (high confidence). Pass 2: If top score < threshold, boost with synonym-expanded words (lower weight). | [`flyto_blueprint/search.py:72`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L72) |
+| function | `def _score_blueprint(query_words: List[str], synonym_words: List[str], bp: dict) -> float` | Score a single blueprint against query words and synonym expansions. Two-pass scoring: - Pass 1: original query words at full weight. - Pass 2: synonym words at half weight (only when pass 1 has gaps). Returns 0.0 when there are no match... | [`flyto_blueprint/search.py:107`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L107) |
 
 ## `flyto_blueprint/sharing.py`
 

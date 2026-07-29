@@ -1,5 +1,17 @@
 # Decisions
 
+## 2026-07-28 - Search summaries expose module identity, not execution data
+
+Decision: add ordered, unique `module_ids` to Blueprint list/search summaries.
+Do not expose step params, argument values, results, or expanded workflows.
+Consumers must still apply the existing trust/evidence gate before using these
+IDs as routing hints.
+
+Reason: capability routers need to know which installed atoms a verified prior
+workflow used, but expanding a Blueprint merely for discovery would require
+arguments and expose a larger data surface. Identity-only summaries provide the
+minimum safe integration contract.
+
 ## 2026-07-28 - Full-usage claims require diversity and history
 
 Decision: add `benchmark-run.v2` and `benchmark-scorecard.v2` for separately

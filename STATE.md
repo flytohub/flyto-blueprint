@@ -17,6 +17,8 @@
   measured zero-planner-call reuse. This does not claim that model-backed
   workflow steps are token-free. Detailed evidence is allowlisted and capped
   to the latest 100 samples.
+- Blueprint list/search summaries expose ordered, unique `module_ids` without
+  step parameters, enabling trust-gated capability ranking in Flyto AI.
 - V3 benchmark evidence is committed: five verified 800-record runs across
   Qwen, Llama, and Gemma; Apple Silicon and Linux x86-64; and one independent
   GitHub runner. Warm benchmark/workload success is 100% in every run, manual
@@ -29,7 +31,7 @@
 - Real SQLite lifecycle evidence exists for local and GitHub hosts. It proves
   learn, trusted promotion, 20 reuses, trusted failure downgrade, immediate
   retirement below score 10, and retirement persistence after Engine reload.
-- Generated reference covers 21 package modules and 167 class, function, and
+- Generated reference covers 21 package modules and 168 class, function, and
   method declarations. CI rejects declaration, catalog, and MCP schema drift.
 - Documentation contract maps seven source areas and nine feature surfaces to
   durable docs and test evidence.
@@ -37,7 +39,7 @@
   Actions; security updates remain enabled. Release Actions use verified
   updates, and the single Grype exception is bound to the patched PyPI Action
   commit instead of suppressing the package broadly.
-- Latest full local verification on 2026-07-28: Ruff passed, 182 tests passed,
+- Latest full local verification on 2026-07-28: Ruff passed, 183 tests passed,
   generated documentation was current, sdist/wheel build passed, and Flyto2
   Indexer strict full-scan passed 17/17 with no warnings and documentation
   score 100. The independent Flyto2 AI benchmark workflow run 30322935702

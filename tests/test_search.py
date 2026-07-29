@@ -49,7 +49,27 @@ class TestListAndSearch:
             assert "name" in bp
             assert "description" in bp
             assert "tags" in bp
+            assert "module_ids" in bp
             assert "args" in bp
+
+    def test_summary_exposes_module_ids_without_step_parameters(self, engine):
+        learned = engine.learn_from_workflow(
+            make_workflow(tag="module_summary"),
+            name="module_summary",
+        )
+        summary = next(
+            bp
+            for bp in engine.list_blueprints()
+            if bp["id"] == learned["data"]["id"]
+        )
+
+        assert summary["module_ids"] == [
+            "math.add",
+            "string.reverse",
+            "array.sort",
+        ]
+        assert "steps" not in summary
+        assert "params" not in summary
 
     def test_learned_summary_exposes_trust_and_community_confidence(self, engine):
         learned = engine.learn_from_workflow(

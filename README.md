@@ -74,6 +74,11 @@ assertion pass rate, p50/p95 duration, and measured zero-planner-call reuse. Det
 samples keep only an allowlist of execution facts and are capped to the latest
 100 entries; prompts, parameters, API keys, and raw results are not accepted.
 
+Search and list summaries also expose ordered, unique `module_ids`. This field
+contains capability names only—never step parameters or results—so Flyto AI
+can use trusted prior workflows as routing hints without expanding or executing
+them.
+
 An Evidence Card answers “did this procedure work?” The versioned
 [effectiveness benchmark](docs/BENCHMARKING.md) answers the harder question:
 “does Blueprint help an agent without making it less reliable?” It compares the

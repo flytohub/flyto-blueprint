@@ -7,6 +7,21 @@ from typing import Dict, List
 from flyto_blueprint.scoring import effective_quality_score, evidence_card
 
 
+def _module_ids(bp: dict) -> List[str]:
+    """Return ordered, unique module IDs without exposing step parameters."""
+    module_ids: List[str] = []
+    seen = set()
+    for step in bp.get("steps", []):
+        if not isinstance(step, dict):
+            continue
+        module_id = step.get("module")
+        if not isinstance(module_id, str) or not module_id or module_id in seen:
+            continue
+        seen.add(module_id)
+        module_ids.append(module_id)
+    return module_ids
+
+
 def bp_summary(bp: dict) -> dict:
     """Build a summary dict for a blueprint."""
     summary = {
@@ -14,6 +29,7 @@ def bp_summary(bp: dict) -> dict:
         "name": bp.get("name", ""),
         "description": bp.get("description", ""),
         "tags": bp.get("tags", []),
+        "module_ids": _module_ids(bp),
         "args": {
             name: {
                 "type": meta.get("type", "string"),

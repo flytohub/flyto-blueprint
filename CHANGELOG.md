@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Blueprint list/search summaries now expose ordered, unique `module_ids`
+  without step parameters or results for trust-gated capability routing.
 - Clarified the public `ci_verified` evidence-tier constant name and emit
   benchmark JSON through an explicit CLI output stream, preserving the exact
   payload without classifying public verification metadata as a secret.
