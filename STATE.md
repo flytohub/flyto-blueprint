@@ -18,7 +18,7 @@
   workflow steps are token-free. Detailed evidence is allowlisted and capped
   to the latest 100 samples.
 - Blueprint list/search summaries expose ordered, unique `module_ids` without
-  step parameters, enabling trust-gated capability ranking in Flyto AI.
+  step parameters, enabling trust-gated capability ranking in Flyto2 AI.
 - V3 benchmark evidence is committed: five verified 800-record runs across
   Qwen, Llama, and Gemma; Apple Silicon and Linux x86-64; and one independent
   GitHub runner. Warm benchmark/workload success is 100% in every run, manual

@@ -75,7 +75,7 @@ samples keep only an allowlist of execution facts and are capped to the latest
 100 entries; prompts, parameters, API keys, and raw results are not accepted.
 
 Search and list summaries also expose ordered, unique `module_ids`. This field
-contains capability names only—never step parameters or results—so Flyto AI
+contains capability names only—never step parameters or results—so Flyto2 AI
 can use trusted prior workflows as routing hints without expanding or executing
 them.
 
