@@ -13,4 +13,7 @@ env/
 .env
 *.db
 .flyto/
+!.flyto/
+.flyto/*
+!.flyto/coding.yaml
 .flyto-index/

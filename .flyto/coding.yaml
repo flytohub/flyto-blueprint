@@ -1,0 +1,37 @@
+# Repository-owned trusted verification contract for `flyto-ai code-mcp`.
+#
+# Every declared check is a real, bounded, argv-only command that runs locally
+# against this checkout with no network, secrets, or deployment access. All
+# four are required: an implementer's change is only acceptable when each one
+# passes exactly as written here.
+#
+# No `capabilities` block is declared on purpose: Blueprint verification needs
+# no external MCP server or detachable capability, so the required capability
+# set is intentionally empty.
+version: flyto.coding-config.v1
+
+checks:
+  # Byte-compile the package so syntax and import-time breakage fail fast.
+  - name: compile
+    argv: ["python", "-m", "compileall", "-q", "flyto_blueprint"]
+    timeout_seconds: 300
+    required: true
+
+  # Canonical fatal lint gate; mirrors the `ruff check .` step in CI.
+  - name: lint
+    argv: ["python", "-m", "ruff", "check", "."]
+    timeout_seconds: 300
+    required: true
+
+  # Reject drift between source declarations, catalog, MCP schemas, and the
+  # committed generated reference documentation.
+  - name: generated_reference
+    argv: ["python", "scripts/generate-reference.py", "--check"]
+    timeout_seconds: 300
+    required: true
+
+  # Full local test suite; no subsetting, no deselection.
+  - name: tests
+    argv: ["python", "-m", "pytest", "-q"]
+    timeout_seconds: 900
+    required: true
