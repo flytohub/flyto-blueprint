@@ -39,6 +39,18 @@
   Actions; security updates remain enabled. Release Actions use verified
   updates, and the single Grype exception is bound to the patched PyPI Action
   commit instead of suppressing the package broadly.
+- Robotics/vision is not yet promoted to an official Blueprint; it is gated on
+  evidence, not excluded from the product. A Blueprint search
+  for `robotics vision exhibition` returns no candidates; that is an honest
+  not-applicable result, and Flyto2 AI may continue to Core discovery and
+  validation. On 2026-08-10 a read-only lower check with the real
+  `core.mcp_handler.validate_params` accepted `robotics.move`, `robotics.turn`,
+  `robotics.stop`, and `vision.observe` with bounded arguments, and rejected
+  missing distance, distance 999, missing degrees, a non-text zone, and unknown
+  `robotics.fly`. That proves module registration and parameter validation only:
+  no execute call, gateway request, pixels, physical camera identity, robot or
+  motor action, or authenticated Cloud route. Physical acceptance remains
+  pending the OpenCR/device-side issue.
 - Latest full local verification on 2026-07-28: Ruff passed, 183 tests passed,
   generated documentation was current, sdist/wheel build passed, and Flyto2
   Indexer strict full-scan passed 17/17 with no warnings and documentation
@@ -51,6 +63,10 @@
 - No repository-local release blocker is recorded.
 - Publishing to PyPI and provider-side workflow success still require remote
   evidence; local verification cannot prove registry permissions.
+- No official robotics/vision Blueprint may be shipped before repeated trusted
+  real-workload outcomes and a completed physical loop; see `DECISIONS.md`
+  (2026-08-10) for the promotion checklist. Gazebo and gateway-report evidence
+  from lower repositories is not Blueprint outcome evidence.
 - New model, task, or host claims must collect at least 20 paired trials per
   task and pass the same v3 directory closure; the current result must not be
   generalized beyond its committed suite and observable provider counters.

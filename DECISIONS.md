@@ -1,5 +1,31 @@
 # Decisions
 
+## 2026-08-10 - Robotics and vision are not yet promoted to an official Blueprint
+
+Decision: a Blueprint search that returns no robotics/vision candidate is a
+valid not-applicable result, not a defect and not a success. Flyto2 AI may
+proceed to Core discovery and validation. Do not ship an official
+robotics/vision Blueprint until there are repeated trusted real-workload
+outcomes and a completed physical loop. This is a gate on current evidence, not
+a permanent exclusion of robotics/vision from the product.
+
+Blueprint remains a reusable pattern and evidence store. It is not the planner,
+the dispatcher, the Core module registry, or the device safety authority.
+
+A later promotion must carry: exact module IDs; explicit bounded motion
+arguments with no default distance or angle; current Core validation; safe-stop
+semantics; resource binding; a defined evidence output shape; repeated trusted
+outcomes; Gazebo evidence; and the relevant physical acceptance.
+
+Reason: parameter validation is cheap to obtain and easy to mistake for
+capability. A real `core.mcp_handler.validate_params` check on 2026-08-10
+accepted four bounded robotics/vision calls and rejected five malformed ones,
+which proves registration and argument checking and nothing else — no
+execution, hardware, pixels, or authenticated Cloud route. Simulation and
+gateway evidence from lower repositories does not transfer to Blueprint.
+Publishing a Blueprint on that basis would let an unproven motion pattern be
+reused as if it were verified.
+
 ## 2026-07-28 - Search summaries expose module identity, not execution data
 
 Decision: add ordered, unique `module_ids` to Blueprint list/search summaries.
