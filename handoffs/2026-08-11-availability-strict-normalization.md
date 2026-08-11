@@ -3,7 +3,7 @@
 Date: 2026-08-11
 Owner: claude
 Branch: main
-Status: verified by Codex on 2026-08-12; commit pending
+Status: verified and committed by Codex on 2026-08-12
 
 ## Closure update — 2026-08-12
 
@@ -13,6 +13,8 @@ drift all passed; pytest passed **256 tests**. `python -m build` produced both
 sdist and wheel. `flyto-index verify . --full-scan --strict --json` passed
 **18/18** with no warnings or failures. The earlier refusal history remains
 below as incident provenance, not as the current release state.
+The audited change is commit `2b9f4cb16648028b2b0703966c14552c1c52c149`;
+strict Indexer also passed 18/18 on that clean committed tree.
 
 Follow-up to `2026-08-11-host-module-availability-gate.md`. That handoff closed
 the gate's behavior. This one closes the gate's **input contract**, and it

@@ -15,7 +15,7 @@
   committed reference is generator-identical.
 - [x] Build both sdist and wheel and run strict Indexer verification for the
   availability-gate change.
-- [ ] Commit the availability-gate change and let CI re-run the pinned checks
+- [x] Commit the availability-gate change (`2b9f4cb`) and let CI re-run the pinned checks
   plus the build and Indexer verification on a clean checkout.
 - [x] Add the reproducible four-mode benchmark harness and CI evidence gate.
 - [x] Keep product-line, execution, trust, and `flyto-core` boundaries
