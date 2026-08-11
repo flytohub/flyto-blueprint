@@ -8,30 +8,51 @@
 # No `capabilities` block is declared on purpose: Blueprint verification needs
 # no external MCP server or detachable capability, so the required capability
 # set is intentionally empty.
+#
+# Interpreter pin (2026-08-11, entry repair):
+# Every `argv[0]` is the repository-relative `.venv/bin/python` instead of a
+# bare `python`. The trusted local runner executes checks with a private HOME
+# and a PATH whose `python` may not contain `pytest`, `ruff`, or this package,
+# so the bare-name form can fail before a check reports a real result. A
+# checkout-local virtualenv keeps the interpreter deterministic without
+# encoding one developer's account name, clone location, or sibling repo.
+#
+# Scope and limits of that pin:
+# - Contributors must create the checkout's `.venv`; absence fails closed with
+#   an actionable missing-executable error.
+# - GitHub Actions does NOT read this file. `.github/workflows/ci.yml` installs
+#   its own Python 3.12 toolchain and runs `ruff check .`, `pytest`,
+#   `python -m build`, and `flyto-index verify . --full-scan --strict --json`
+#   independently, so CI is unaffected by this pin.
+# - The pin changes only which interpreter runs each check. The four checks,
+#   their arguments, their order, and their `required: true` status are
+#   unchanged.
+# - With the portable pin in place all four checks were executed and passed on
+#   2026-08-12 (`tests`: 256 passing).
 version: flyto.coding-config.v1
 
 checks:
   # Byte-compile the package so syntax and import-time breakage fail fast.
   - name: compile
-    argv: ["python", "-m", "compileall", "-q", "flyto_blueprint"]
+    argv: [".venv/bin/python", "-m", "compileall", "-q", "flyto_blueprint"]
     timeout_seconds: 300
     required: true
 
   # Canonical fatal lint gate; mirrors the `ruff check .` step in CI.
   - name: lint
-    argv: ["python", "-m", "ruff", "check", "."]
+    argv: [".venv/bin/python", "-m", "ruff", "check", "."]
     timeout_seconds: 300
     required: true
 
   # Reject drift between source declarations, catalog, MCP schemas, and the
   # committed generated reference documentation.
   - name: generated_reference
-    argv: ["python", "scripts/generate-reference.py", "--check"]
+    argv: [".venv/bin/python", "scripts/generate-reference.py", "--check"]
     timeout_seconds: 300
     required: true
 
   # Full local test suite; no subsetting, no deselection.
   - name: tests
-    argv: ["python", "-m", "pytest", "-q"]
+    argv: [".venv/bin/python", "-m", "pytest", "-q"]
     timeout_seconds: 900
     required: true

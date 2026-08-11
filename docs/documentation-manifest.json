@@ -32,8 +32,9 @@
     {
       "id": "blueprint-processing",
       "description": "Deterministic loading, search, intent matching, template substitution, composition, validation, fingerprinting, learning, and scoring.",
-      "paths": ["flyto_blueprint/loader.py", "flyto_blueprint/search.py", "flyto_blueprint/intent.py", "flyto_blueprint/template.py", "flyto_blueprint/compose.py", "flyto_blueprint/validate.py", "flyto_blueprint/fingerprint.py", "flyto_blueprint/learn.py", "flyto_blueprint/scoring.py"],
-      "documentation": ["docs/FEATURES.md#search-and-intent-matching", "docs/FEATURES.md#expansion-and-composition", "docs/FEATURES.md#workflow-learning", "docs/FEATURES.md#outcome-scoring"]
+      "paths": ["flyto_blueprint/loader.py", "flyto_blueprint/search.py", "flyto_blueprint/intent.py", "flyto_blueprint/template.py", "flyto_blueprint/compose.py", "flyto_blueprint/availability.py", "flyto_blueprint/validate.py", "flyto_blueprint/fingerprint.py", "flyto_blueprint/learn.py", "flyto_blueprint/scoring.py"],
+      "documentation": ["docs/FEATURES.md#search-and-intent-matching", "docs/FEATURES.md#expansion-and-composition", "docs/FEATURES.md#workflow-learning", "docs/FEATURES.md#outcome-scoring"],
+      "tests": ["tests/test_availability.py"]
     },
     {
       "id": "storage",
@@ -95,9 +96,9 @@
       "kind": "library",
       "status": "active",
       "description": "Substitutes arguments, expands blocks, chains patterns, rewrites step references, and validates generated workflow steps.",
-      "source": ["flyto_blueprint/template.py", "flyto_blueprint/compose.py", "flyto_blueprint/validate.py"],
+      "source": ["flyto_blueprint/template.py", "flyto_blueprint/compose.py", "flyto_blueprint/availability.py", "flyto_blueprint/validate.py"],
       "documentation": ["docs/FEATURES.md#expansion-and-composition", "docs/API.md#expandblueprint_id-args"],
-      "tests": ["tests/test_expand.py", "tests/test_template.py", "tests/test_integration.py"]
+      "tests": ["tests/test_expand.py", "tests/test_template.py", "tests/test_availability.py", "tests/test_integration.py"]
     },
     {
       "id": "learning-scoring",

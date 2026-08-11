@@ -30,6 +30,17 @@ Boundary:
 - SaaS, enterprise, community, and internal-only behavior must remain explicit.
 - `flyto_blueprint.tools` exposes schemas only; an embedding application owns
   MCP transport, authentication, authorization, and tool execution.
+- Host module availability (`flyto_blueprint.availability`) is a trust boundary,
+  not a feature flag. The set of executable module IDs is authoritative host
+  state passed in by the embedding application; the library never imports
+  Flyto2 Core to discover modules and never accepts the set from a model, so it
+  is absent from every schema in `flyto_blueprint.tools`. Omitting the set
+  (`None`) is "no claim" and preserves the previous permissive behavior; an
+  empty set is the real claim that nothing is executable. The gate fails closed:
+  a required module that cannot be proven available — including a step whose
+  module is still an unresolved `{{arg}}` template — hides the blueprint from
+  list/search, and `expand` rejects it before any use count, score, or expanded
+  workflow exists.
 - Learned workflows stay in the configured backend and are never uploaded by
   the library itself.
 - Sharing is explicit export/import of integrity-checked bundles. Unsigned or

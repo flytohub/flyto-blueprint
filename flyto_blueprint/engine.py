@@ -3,8 +3,14 @@
 """BlueprintEngine — orchestrator for loading, searching, expanding, and evolving blueprints."""
 import logging
 import time
-from typing import Dict, List, Mapping, Optional
+from typing import Dict, FrozenSet, Iterable, List, Mapping, Optional
 
+from flyto_blueprint.availability import (
+    is_blueprint_available,
+    missing_module_ids,
+    module_unavailable_error,
+    normalize_available_module_ids,
+)
 from flyto_blueprint.compose import expand_blueprint
 from flyto_blueprint.learn import learn_from_workflow as _learn
 from flyto_blueprint.loader import load_blocks, load_builtins
@@ -82,20 +88,70 @@ class BlueprintEngine:
         if time.time() - self._last_learned_refresh > _LEARNED_CACHE_TTL:
             self._load_learned()
 
+    # ── Host module availability ───────────────────────────────────────
+
+    def _runnable_blueprints(
+        self,
+        available: Optional[FrozenSet[str]],
+    ) -> Dict[str, dict]:
+        """Return the blueprints whose required modules the host can execute."""
+        # None means the host made no claim, so the full set is returned.
+        if available is None:
+            return self._blueprints
+        return {
+            bp_id: bp
+            for bp_id, bp in self._blueprints.items()
+            if is_blueprint_available(bp, available, self._blocks)
+        }
+
     # ── Public API ─────────────────────────────────────────────────────
 
-    def list_blueprints(self) -> List[dict]:
-        """Return summaries of all non-retired blueprints, sorted by score desc."""
-        self._maybe_refresh_learned()
-        return _list(self._blueprints)
+    def list_blueprints(
+        self,
+        available_module_ids: Optional[Iterable[str]] = None,
+    ) -> List[dict]:
+        """Return summaries of all non-retired blueprints, sorted by score desc.
 
-    def search(self, query: str) -> List[dict]:
-        """Search blueprints by query. Empty query returns all."""
+        Host-supplied *available_module_ids* keeps only runnable blueprints;
+        ``None`` lists everything and an empty collection lists nothing.
+        """
+        # Authoritative host state, never model input. A blueprint is runnable
+        # only when every module it needs, including composition block modules,
+        # is available. Listing fails closed: a blueprint whose module name is
+        # a dynamic ``{{arg}}`` template cannot be proven runnable, so it is
+        # hidden and only reachable through an explicit expand call.
         self._maybe_refresh_learned()
-        return _search(query, self._blueprints)
+        available = normalize_available_module_ids(available_module_ids)
+        return _list(self._runnable_blueprints(available))
 
-    def expand(self, blueprint_id: str, args: dict) -> dict:
-        """Expand a blueprint with args. Returns ``{ok, data, warnings?}``."""
+    def search(
+        self,
+        query: str,
+        available_module_ids: Optional[Iterable[str]] = None,
+    ) -> List[dict]:
+        """Search blueprints by query. Empty query returns all.
+
+        *available_module_ids* filters results like :meth:`list_blueprints`.
+        """
+        self._maybe_refresh_learned()
+        available = normalize_available_module_ids(available_module_ids)
+        return _search(query, self._runnable_blueprints(available))
+
+    def expand(
+        self,
+        blueprint_id: str,
+        args: dict,
+        available_module_ids: Optional[Iterable[str]] = None,
+    ) -> dict:
+        """Expand a blueprint with args. Returns ``{ok, data, warnings?}``.
+
+        A step module that *args* resolve to an unavailable module fails
+        before any use or scoring, with ``BLUEPRINT_MODULE_UNAVAILABLE``.
+        """
+        # The failure also carries sorted ``missing_module_ids``. Dynamic
+        # ``{{arg}}`` module names are resolved first, so a host cannot be
+        # talked into running a module it never published.
+        available = normalize_available_module_ids(available_module_ids)
         self._maybe_refresh_learned()
         bp = self._blueprints.get(blueprint_id)
         if bp and bp.get("retired"):
@@ -109,6 +165,10 @@ class BlueprintEngine:
                 bp = loaded
         if not bp:
             return {"ok": False, "error": "Blueprint '{}' not found".format(blueprint_id)}
+
+        missing = missing_module_ids(bp, available, self._blocks, args)
+        if missing:
+            return module_unavailable_error(blueprint_id, missing)
 
         if bp.get("_source") == "learned":
             record_use(blueprint_id, self._blueprints, self._storage)

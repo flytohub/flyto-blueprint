@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+### Added
+
+- `list_blueprints`, `search`, and `expand` accept an optional authoritative
+  `available_module_ids` set from the embedding host. `None` keeps the previous
+  behavior; a supplied set hides blueprints the host cannot run and fails
+  `expand` before any use or score is recorded with code
+  `BLUEPRINT_MODULE_UNAVAILABLE` and sorted `missing_module_ids`; an empty set
+  means nothing is available. The gate fails closed for dynamic `{{arg}}`
+  module names, imports no Flyto2 Core module, and is not exposed to models
+  through any MCP tool schema.
+- Host availability input is validated strictly and normalized exactly once per
+  call into a single frozen set shared by list, search, and expand. A
+  `str`/`bytes`/`bytearray`/`memoryview`, a non-iterable, an iterable that
+  raises `TypeError`, and a non-string entry all raise `TypeError`; a blank,
+  whitespace-only, or whitespace-padded entry raises `ValueError`. A padded ID
+  is never trimmed on the host's behalf. Any iterable of well-formed IDs is
+  accepted, including a generator, which is consumed exactly once.
+
+### Fixed
+
+- Malformed entries in `available_module_ids` are no longer silently dropped.
+  The previous filter discarded non-string and empty entries, which narrowed
+  the gate below what the host actually claimed and could hide or refuse a
+  blueprint with no error explaining why. Operator-visible: a host that was
+  passing a malformed collection now gets an exception instead of a quietly
+  reduced set.
+
+- The four required checks in `.flyto/coding.yaml` now launch again on the
+  trusted local runner. Each Python `argv[0]` is pinned to the checkout-local
+  interpreter `.venv/bin/python`, because the
+  runner's private HOME resolved a bare `python` to an interpreter without
+  `pytest`, `ruff`, or this package, so every check failed at process entry and
+  produced no verification signal. Operator-visible only: the checks, their
+  arguments, their order, and their `required: true` status are unchanged, the
+  path contains no developer or clone identity, and `.github/workflows/ci.yml`
+  does not read this file.
+
 ### Changed
 
 - Blueprint list/search summaries now expose ordered, unique `module_ids`

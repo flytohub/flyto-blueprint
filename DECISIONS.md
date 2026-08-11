@@ -1,5 +1,72 @@
 # Decisions
 
+## 2026-08-11 - Malformed availability input is rejected, never repaired
+
+Decision: `normalize_available_module_ids` validates host input strictly and
+normalizes it exactly once per call into a single frozen set that
+`list_blueprints`, `search`, and `expand` all gate against. A
+`str`/`bytes`/`bytearray`/`memoryview`, a non-iterable, an iterable whose
+iteration raises `TypeError`, and any non-string entry raise `TypeError`. A
+blank, whitespace-only, or whitespace-padded entry raises `ValueError`, and a
+padded ID is never trimmed on the host's behalf. `None` and the empty iterable
+keep their existing, distinct meanings.
+
+Reason: the first implementation filtered malformed entries out with
+`if isinstance(module_id, str) and module_id`. For a safety gate that is the
+wrong failure direction. Dropping an entry produces a set that claims *less*
+than the host claimed, so a blueprint is hidden from `list` or refused by
+`expand` for a reason no error names, and the host cannot distinguish its own
+typo from a genuinely unpublished module. Repairing input also makes the gate's
+meaning depend on how badly the caller malformed it. Raising keeps the frozen
+set a faithful statement of host capability, and keeping `TypeError` and
+`ValueError` distinct lets a host separate a shape error from a content error.
+Trimming was rejected specifically: a padded ID cannot match a real module name,
+so trimming would invent a claim the host never made, while rejecting says so.
+`bytes` is called out because iterating it yields `int`, which would compare
+integers against module names and match nothing — failing closed, but silently.
+
+## 2026-08-11 - Host module availability is trusted host state and fails closed
+
+Decision: `list_blueprints`, `search`, and `expand` accept an optional
+`available_module_ids` collection supplied by the embedding host. `None` means
+the host made no claim and behavior is unchanged, including for abstract or
+host-unknown module names. A supplied collection filters list/search to
+blueprints whose every required module is available, and makes `expand` return
+`{"ok": False, "code": "BLUEPRINT_MODULE_UNAVAILABLE", "missing_module_ids":
+[...]}` before any use count, score, or expanded workflow is produced. An empty
+collection is a real claim that nothing is available. Required modules include
+composition block steps and exclude steps that `skip_if_missing` would drop.
+The parameter is deliberately absent from every model-facing MCP tool schema,
+and `flyto_blueprint.availability` imports no Flyto2 Core module.
+
+The gate fails closed on dynamic module names. A step whose module is still a
+`{{arg}}` template cannot be proven runnable, so the blueprint is hidden from
+list/search, and `expand` gates on the module the supplied arguments actually
+resolve to — an unresolved template is reported verbatim as missing.
+
+Reason: an availability hint that a model could supply, or that defaulted to
+"available" when it could not be proven, is an escalation path rather than a
+safety control: `file_transform` runs `{{operation}}`, so an optimistic gate
+would let a caller name any module string and have the host expand a workflow
+around it. Trusting only host state, defaulting to "no claim" when nothing is
+passed, and refusing to guess on unresolved templates keeps the existing
+permissive integration working while making the gated integration honest.
+
+## 2026-08-12 - The local verification contract pins a checkout interpreter
+
+Decision: keep every Python `argv[0]` in `.flyto/coding.yaml` pinned to the
+checkout-relative `.venv/bin/python`, and record in that file that contributors
+must create that environment, GitHub Actions does not read the file, and only
+the interpreter changed.
+
+Reason: the trusted local runner executes these checks under a private HOME
+whose `python` has no `pytest`, `ruff`, or this package, so the previous
+bare-name form failed at process entry and produced no verification signal at
+all. A failure to launch is worse than a failing check because it looks like an
+environment problem rather than a repository result. The pin is an operator
+environment repair with no user or clone path: `.github/workflows/ci.yml` still
+installs its own toolchain and remains an independent portable gate.
+
 ## 2026-08-10 - Robotics and vision are not yet promoted to an official Blueprint
 
 Decision: a Blueprint search that returns no robotics/vision candidate is a

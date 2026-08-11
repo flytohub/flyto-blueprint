@@ -32,17 +32,19 @@ BlueprintEngine(storage: StorageBackend | None = None)
 Loads packaged blueprints and composition blocks immediately. A storage backend
 adds learned blueprints; omitting it creates a built-in-only engine.
 
-### `list_blueprints()`
+### `list_blueprints(available_module_ids=None)`
 
 Returns non-retired summaries ordered by score. Stored blueprints are refreshed
-after the internal cache TTL.
+after the internal cache TTL. See
+[host module availability](#host-module-availability) for the optional filter.
 
-### `search(query)`
+### `search(query, available_module_ids=None)`
 
 Matches a query against blueprint identifiers, names, descriptions, and tags.
-An empty query returns the same set as `list_blueprints()`.
+An empty query returns the same set as `list_blueprints()`. The optional filter
+behaves exactly as in `list_blueprints`.
 
-### `expand(blueprint_id, args)`
+### `expand(blueprint_id, args, available_module_ids=None)`
 
 Substitutes arguments, expands composition blocks, validates the resulting
 steps against Flyto2 Core when available, and returns a result object:
@@ -53,6 +55,58 @@ steps against Flyto2 Core when available, and returns a result object:
 
 Unknown identifiers return `{"ok": False, "error": ...}` instead of raising a
 lookup exception. Learned blueprint use counters are updated through storage.
+
+## Host Module Availability
+
+`available_module_ids` is authoritative host state: the set of module
+identifiers the embedding host can actually execute. The engine never imports
+Flyto2 Core and never discovers modules itself.
+
+| Value | Behavior |
+|---|---|
+| `None` (default) | Unchanged behavior. Nothing is filtered and expansion accepts abstract or host-unknown module names. |
+| A collection of IDs | `list`/`search` return only blueprints whose required modules are all available; `expand` fails when a required module is not. |
+| An empty collection | A real claim that no module is available: nothing is listed and every expansion fails. |
+
+Required modules include composition block steps, because those become real
+workflow steps. The gate fails closed for dynamic module names: a step whose
+module is still a `{{arg}}` template cannot be proven runnable, so the
+blueprint is hidden from `list`/`search`, and `expand` gates on the module the
+supplied arguments actually resolve to. Steps that expansion would skip
+through `skip_if_missing` are not required.
+
+The value is normalized exactly once per call, into one frozen set that
+`list`, `search`, and `expand` all gate against. Malformed input raises rather
+than being silently repaired, because dropping an entry would narrow the set
+below what the host claimed and hide or refuse a blueprint for a reason no
+error ever names:
+
+| Input | Result |
+|---|---|
+| `str`, `bytes`, `bytearray`, `memoryview` | `TypeError` — iterating it would gate on single characters or integers. |
+| Not iterable, or iterating raises `TypeError` | `TypeError`. |
+| An entry that is not a `str` | `TypeError`. |
+| An empty or whitespace-only entry | `ValueError`. |
+| An entry with leading or trailing whitespace | `ValueError` — it is never trimmed, because a padded ID cannot match a real module name. |
+
+Any iterable of well-formed ID strings is accepted, including a `set`,
+`tuple`, `dict` (its keys), or a generator, which is consumed exactly once.
+
+A blocked expansion is returned before any use or score is recorded:
+
+```python
+{
+    "ok": False,
+    "error": "Blueprint 'file_transform' requires modules unavailable on this host: shell.execute",
+    "code": "BLUEPRINT_MODULE_UNAVAILABLE",
+    "missing_module_ids": ["shell.execute"],
+}
+```
+
+`missing_module_ids` is sorted and deduplicated, so the response is
+deterministic. This parameter is deliberately absent from the model-facing MCP
+tool schemas; a trusted host passes it internally when it binds the tools to
+engine methods.
 
 ### `learn_from_workflow(...)`
 

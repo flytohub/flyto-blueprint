@@ -64,6 +64,17 @@ blueprints, deconflicts step identifiers, wires cross-blueprint references, and
 reports unresolved placeholders. Resulting steps can be validated against
 Flyto2 Core when the optional dependency is installed.
 
+An embedding host may also pass the set of module IDs it can actually execute.
+Listing and search then return only blueprints whose every required module —
+including modules contributed by composition blocks — is available, and
+expansion refuses a blueprint the host cannot run before any use count or score
+changes. Passing nothing keeps the previous permissive behavior; passing an
+empty set is the explicit claim that nothing is executable. The gate never
+guesses: a step whose module is still an unresolved `{{arg}}` template hides
+the blueprint from discovery, and expansion gates on the module the supplied
+arguments actually resolve to. See
+[API.md](API.md#host-module-availability).
+
 ## Workflow Learning
 
 Learning fingerprints successful workflows, abstracts concrete values into
@@ -100,7 +111,9 @@ resources and are not rewritten by learned data.
 
 The package exposes six MCP-compatible JSON Schema tool definitions for list,
 expand, save, outcome reporting, export, and import. Model-facing schemas never
-accept signing or trusted-publisher keys. The embedding host owns credentials,
+accept signing or trusted-publisher keys, and never accept the host's executable
+module set — availability is passed in by the host when it binds these tools to
+engine methods. The embedding host owns credentials,
 tenant scope, tool authorization, trust configuration, and Flyto2 Core
 execution.
 
