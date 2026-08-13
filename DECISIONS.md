@@ -1,5 +1,53 @@
 # Decisions
 
+## 2026-08-13 - Capability indexing starts with a safe, rebuildable contract
+
+Decision: accept only the exact versioned capability-card projection and emit
+deterministic JSON-native documents, mutations, tombstones, hard-filter query
+requests, candidate pages, and HMAC-bound keyset cursors. Bind source,
+upstream-content, document, model, filter, index, and snapshot digests. Derive
+lexical fields and vector-input text only from accepted display and semantic
+fields. Require tenant/space/status/ACL/risk/resource filters before lexical or
+ANN retrieval. Candidates explicitly carry no execution authority.
+
+Do not connect a backend, compute/store vectors, infer missing display or
+semantics, accept workflow arguments or secrets, or treat filters, scores, or
+cursor integrity as approval. Retired or otherwise ineligible cards cannot
+produce upserts; tombstones contain identity and digests but no search content.
+
+Query resource/capability lists differ from document identity: empty means no
+additional restriction, allowing discovery of unknown IDs; non-empty is a hard
+filter. An empty document resource list explicitly means no named resource is
+required. ACL remains non-empty and risk is an ordered `minimal` through
+`critical` ceiling. Set-like ACL/resource/capability metadata is duplicate-free
+and sorted at document, request, and candidate boundaries; semantic projection
+order remains producer-owned. Requests are rebuilt before cursor/page
+validation, a non-null request cursor requires an integrity key, and every
+paged candidate must sort strictly after its authenticated last score/ID key.
+The cursor also binds the cumulative emitted count; a page must fit the
+remaining `top_k` budget and cannot issue or consume a continuation at
+exhaustion. Separate finite projection/document/request/page budgets admit the
+complete producer envelope and a minimal 100-candidate page without making
+depth, nodes, or bytes unbounded. Producer display text preserves NFC
+whitespace and private/unassigned code points, rejects control/format/surrogate
+characters, and whitespace-only display data remains audit-only.
+An undefined source kind is likewise audit-visible incomplete data, never a
+candidate. Accepted cards must be host-verified and audit-visible, carry the
+producer-derived trust state, and make autonomous routability exactly match
+their complete/approved/verified/active/not-retired flags. Complete cards need
+a source kind, stripped nonblank display fields, and semantic identity.
+Producer semantic lists must arrive sorted; the consumer does not normalize a
+second projection digest. Producer tenant, space, and capability identifiers
+retain their 192-character width across every retrieval handoff.
+Every candidate binds the request's model, index, and snapshot digests.
+Tombstones rebuild from an ineligible projection plus prior document digest or
+an exact minimal prior identity envelope, without retaining search content.
+
+Reason: the first reusable boundary must be independently rebuildable and safe
+to pass to different million-scale retrieval backends without making Blueprint
+an authorization system or leaking execution material. Exact schemas and
+content-free failures make drift, hostile mappings, and tampering fail closed.
+
 ## 2026-08-11 - Malformed availability input is rejected, never repaired
 
 Decision: `normalize_available_module_ids` validates host input strictly and

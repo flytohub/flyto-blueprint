@@ -4,6 +4,34 @@
 
 ### Added
 
+- Added the phase-one provider-neutral Capability Search contract: strict safe
+  projection validation; deterministic digest-bound documents and mutations;
+  content-free retirement tombstones; explicit prefilter-first query plans;
+  bounded candidate pages; and tamper-evident, query-bound keyset cursors. It
+  computes no embeddings, stores nothing, grants no authorization, and is not
+  connected to any Flyto host or retrieval backend.
+- Hardened that contract for the upstream v1 projection, recursively bounded
+  JSON snapshots, hostile-container redaction, request rebuilds, unknown-ID
+  discovery, ordered risk ceilings, candidate digest binding, authenticated
+  continuation keys, and content-free retirement from ineligible source or a
+  minimal prior identity.
+- Aligned safe projection identifiers and display fields with the accepted v1
+  producer maxima; required keyed, forward-only continuation requests; bound
+  candidates to the request index digest; allowed software capabilities with
+  no named resource; and canonicalized duplicate-free set-like filter metadata
+  without changing producer semantic ordering.
+- Repaired boundary budgets so maximum accepted producer projections can build
+  and validate derived documents and a minimal 100-result page remains valid;
+  all envelopes retain finite depth, node, and byte limits. Cursor signatures
+  now bind cumulative emitted count and refuse `top_k` exhaustion. Projection
+  semantics now enforce 32 IDs per field and preserve the producer's NFC
+  display whitespace/private-use dialect while keeping whitespace-only cards
+  non-routable.
+- Accepted producer projections now preserve null source kind as incomplete
+  audit data, reject hidden audit state, contradictory trust/routability flags,
+  incomplete complete-cards, and unsorted semantic IDs. Tenant, space, and
+  capability identifiers retain their 192-character producer width through
+  document, request, candidate, and cursor validation.
 - `list_blueprints`, `search`, and `expand` accept an optional authoritative
   `available_module_ids` set from the embedding host. `None` keeps the previous
   behavior; a supplied set hides blueprints the host cannot run and fails

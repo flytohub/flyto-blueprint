@@ -57,6 +57,38 @@ Deterministic search scores identifiers, names, descriptions, and tags. The
 optional intent matcher adds query expansion, keyword candidates, embeddings,
 and query tracking without changing the deterministic engine API.
 
+The separate phase-one Capability Search contract accepts one exact safe host
+projection and derives deterministic lexical and embedding-input documents. It
+also defines backend-neutral, million-scale request/page contracts: tenant,
+space, active-status, ACL, risk, resource, and capability filters must run
+before lexical/ANN retrieval; pagination uses a tamper-evident keyset cursor,
+not an offset. Vector scores produce candidates only. This library neither
+computes vectors nor owns an index, backend, authorization decision, or
+execution route, and documents never include workflow parameters, payloads,
+prompts, endpoints, headers, tokens, credentials, or source references.
+Empty query resource/capability lists mean no additional restriction, so ANN
+discovery need not pre-enumerate result IDs; non-empty lists are hard filters.
+Risk is an ordered `minimal`→`critical` ceiling. Requests are rebuilt before
+page/cursor use, and continuation cursors authenticate the request plus last
+score/ID. Empty/incomplete upstream projections remain audit-visible but are
+never indexed and receive no synthesized content. A non-null request cursor
+requires its integrity key and every returned key must be strictly forward.
+Candidates bind model, index, and snapshot digests. Empty document resources
+mean no named resource is required, and duplicate-free ACL/resource/capability
+sets are canonicalized without reordering upstream semantic fields.
+Producer semantic fields accept at most 32 identifiers. Title and summary
+preserve NFC text, including surrounding whitespace, while controls, format
+characters, and surrogates are rejected; whitespace-only display data cannot
+be indexed. Separate finite projection, document, request, and page envelopes
+support maximum valid derivation and 100 minimal candidates. Cursor state also
+binds cumulative emitted count, preventing later pages from exceeding `top_k`.
+An undefined source kind is accepted only for visible, coherent incomplete
+audit data and is never indexed. Trust state and autonomous routability must
+exactly match the producer flags, complete cards require source/display/
+semantic content, and producer semantic lists must already be sorted. The
+192-character tenant/space/capability identity bound is preserved across
+documents, requests, candidates, and cursors.
+
 ## Expansion And Composition
 
 Expansion resolves arguments recursively, expands named blocks, chains multiple

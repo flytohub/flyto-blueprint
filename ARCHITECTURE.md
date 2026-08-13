@@ -25,6 +25,32 @@ real longitudinal runner
 Boundary:
 
 - Product lines: cloud_apps_automation, data, zero_person_agent
+- Phase-one capability search is a provider-neutral contract layer in
+  `flyto_blueprint.intent`. It validates one exact safe catalogue projection,
+  derives deterministic lexical/vector-input documents, and defines bounded
+  upsert, tombstone, hard-filter query, candidate-page, and keyset-cursor
+  envelopes. It computes no vectors and owns no index, cache, storage,
+  authorization, routing, execution, network, provider, or database behavior.
+  Host filters must precede lexical/ANN retrieval and remain retrieval filters,
+  never trust or execution authority. Empty query resource/capability lists
+  mean no additional restriction, enabling discovery without knowing result
+  IDs; non-empty lists are hard constraints. Risk uses the ordered `minimal`
+  through `critical` ceiling. Documents bind exactly one capability and may
+  carry an empty resource set to mean that no named resource is required.
+  Projection identifiers use the producer's 192-character safe-ASCII bound and
+  display fields use its 2,000-character NFC-preserving dialect and each
+  semantic field carries at most 32 producer-ordered identifiers; unrelated
+  host identifiers keep their narrower limits. Set-like ACL/resource/capability filters are sorted at
+  boundaries, while producer-canonical semantic ordering is preserved.
+  Undefined `source_kind` remains valid audit data but cannot be complete or
+  indexable. Producer tenant/space/capability identity retains its 192-character
+  width through document filters, requests, candidates, and cursors. Accepted
+  projections require visible, host-verified audit state and exact deterministic
+  trust/routability coherence; semantic lists must already be producer-sorted.
+  Projection, derived-document, request, and 100-candidate page boundaries use
+  separate finite byte/node envelopes with one shared finite depth ceiling.
+  Signed cursors bind the last key and cumulative emitted count, so pagination
+  cannot exceed `top_k` across pages.
 - Core relationship: planning/blueprint tooling
 - This repo must not bypass shared `flyto-core` runtime boundaries.
 - SaaS, enterprise, community, and internal-only behavior must remain explicit.

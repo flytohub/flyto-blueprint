@@ -2,11 +2,28 @@
 
 ## Current State
 
-- Current local closure (2026-08-12): all four repository-pinned checks pass,
-  including **256 tests**; generated references are current; sdist and wheel
-  build successfully; Flyto2 Indexer strict full-scan passes **18/18** with no
-  warnings or failures. This supersedes the historical unverified/refused-run
-  entries retained below as incident provenance.
+- Phase one of the Blueprint Capability Search Document/Index contract is
+  implemented as stateless, provider-neutral JSON-native validation and
+  derivation helpers. It is not wired to Flyto AI, Cloud, Core, a UI, storage,
+  network, an embedding provider, or a vector database. Search results are
+  candidate-only and the host still owns authorization and execution.
+  The dialect matches upstream v1 192-character safe identifiers, at most 32
+  semantic identifiers per field, NFC-preserved 2,000-character title/summary
+  fields, exact `sha256:` digests,
+  declared/static-derived origins, domain-neutral source kinds, and valid
+  empty/incomplete audit data. Public reads detach bounded JSON, canonicalize
+  set-like filters, bind candidates to model/index/snapshot digests, and require
+  authenticated forward-only continuation state with a cumulative `top_k`
+  count. Boundary-specific finite envelopes admit maximum producer documents
+  and minimal 100-candidate pages without relaxing the shared depth ceiling.
+  Null source kind is retained only for coherent incomplete audit projections;
+  accepted projections require host-visible audit state, deterministic trust
+  and routability coherence, and producer-sorted semantic IDs. The producer's
+  192-character tenant/space/capability identity remains intact through
+  documents, requests, candidates, and cursors.
+  Verification for this adopted
+  dirty revision remains host-owned; historical results below are not evidence
+  for it.
 - Repository status: active open-source Python package, version 0.2.2.
 - Stable package root exports `BlueprintEngine`, `StorageBackend`,
   `MemoryBackend`, and `get_engine`.
