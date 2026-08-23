@@ -10,6 +10,28 @@
   <strong>Most agent memory stores what was said. Blueprint stores what actually worked.</strong>
 </p>
 
+**Turn AI work into verified, replayable procedures.**
+
+**AI said it finished. Flyto2 shows the proof.**
+
+Product contract: `flyto.product-contract.v1` · Product: `Flyto2`
+
+Flyto2 is one product delivered as three independently usable packages:
+
+| Package | Role |
+|---|---|
+| `flyto-ai` | Understand, route, and govern new work and provider use. |
+| `flyto-blueprint` | Store, learn from, and score reusable procedures; it never executes them. |
+| `flyto-core` | Validate schemas, execute and replay deterministically, and emit evidence. |
+
+`flyto-blueprint` is an independently usable procedure-memory package.
+Language and LLM systems may understand or route work; Blueprint persists,
+expands, and ranks procedures from validated execution outcomes supplied by a
+host. This evidence-first boundary means Blueprint neither executes workflows
+nor guesses scientific facts. Mathematics, physics, chemistry, robotics, and
+other domain solvers belong in bounded capabilities and hosts when evidence
+requires them.
+
 Flyto2 Blueprint is procedure memory for AI agents. It turns a successful
 execution into a parameterized workflow that can be searched, run again, and
 judged by its real history.
@@ -29,8 +51,8 @@ record the outcome in an Evidence Card
 It is closer to turning a good agent run into a tested function than adding
 another chat-history or vector-memory layer.
 
-Blueprint does not train model weights. It makes a verified procedure
-executable again.
+Blueprint does not train model weights. It makes a verified procedure reusable
+by an execution host.
 
 ## Installation and first run
 

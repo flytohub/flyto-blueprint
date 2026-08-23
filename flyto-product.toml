@@ -1,0 +1,19 @@
+schema = "flyto.product-contract.v1"
+product = "Flyto2"
+promise = "Turn AI work into verified, replayable procedures."
+proof_line = "AI said it finished. Flyto2 shows the proof."
+
+[package]
+name = "flyto-blueprint"
+layer = "procedure_memory"
+layer_order = 2
+owns = [
+    "reusable procedure learning and scoring",
+    "procedure expansion and compatibility",
+    "procedure outcome history",
+]
+does_not_own = [
+    "intent and provider governance",
+    "workflow execution",
+    "hosted product and account logic",
+]

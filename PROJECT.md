@@ -1,7 +1,12 @@
 # Project
 
-`flyto-blueprint` is the Python pattern engine for discovering, composing,
-expanding, learning, scoring, and persisting reusable Flyto2 workflows.
+`flyto-blueprint` is Flyto2's independently usable procedure-memory package.
+It stores, learns from, expands, scores, and persists reusable procedures, but
+never executes them.
+
+Flyto2 has three independently usable packages: `flyto-ai` owns intent,
+provider governance, and routing; `flyto-blueprint` owns procedure memory;
+`flyto-core` owns deterministic validation, execution, replay, and evidence.
 
 Product lines:
 
@@ -11,8 +16,12 @@ Product lines:
 
 Status: active open-source library
 
-Core relationship: produces and validates workflow step dictionaries that a
-Flyto2 Core host can execute. It does not execute workflows itself.
+Owned surfaces: reusable procedure learning and scoring; procedure expansion
+and compatibility; procedure outcome history.
+
+Non-goals: intent and provider governance; workflow execution; hosted product
+and account logic; general-purpose mathematics, physics, chemistry, robotics,
+or other domain solvers.
 
 Evidence contract: Flyto2 AI owns the trusted real-workload host. This
 repository owns strict run schemas, deterministic scorecards, cross-model /

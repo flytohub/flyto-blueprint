@@ -1,5 +1,11 @@
 # Architecture
 
+Flyto2 is one product with three independently usable packages. Blueprint is
+layer 2, `procedure_memory`: it accepts host-supplied validated outcomes and
+deterministically stores, expands, learns from, and scores procedures. Flyto AI
+owns intent and provider governance; Flyto Core owns validation, execution,
+replay, and evidence. Blueprint never executes a procedure.
+
 This repository is a Python library with four runtime layers and one
 independent evidence layer:
 
@@ -24,6 +30,15 @@ real longitudinal runner
 
 Boundary:
 
+- Blueprint owns exactly reusable procedure learning and scoring, procedure
+  expansion and compatibility, and procedure outcome history. It does not own
+  intent and provider governance, workflow execution, or hosted product and
+  account logic.
+- Language and LLM systems may understand or route. Validated execution
+  outcomes enter through a host; Blueprint persists and ranks their procedures
+  without guessing domain facts. Mathematics, physics, chemistry, robotics,
+  and other domain solvers belong in bounded capabilities and hosts, not this
+  general procedure-memory package.
 - Product lines: cloud_apps_automation, data, zero_person_agent
 - Phase-one capability search is a provider-neutral contract layer in
   `flyto_blueprint.intent`. It validates one exact safe catalogue projection,

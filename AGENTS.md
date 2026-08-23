@@ -5,7 +5,7 @@ This repo is part of the Flyto2 workspace.
 Role:
 
 - Repo: `flyto-blueprint`
-- Status: internal tooling
+- Status: active open-source library
 - Product lines: cloud_apps_automation, data, zero_person_agent
 - Core dependency: planning/blueprint tooling
 

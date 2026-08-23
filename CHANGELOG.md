@@ -4,6 +4,11 @@
 
 ### Added
 
+- Added the deterministic `flyto.product-contract.v1` manifest and a
+  Python-3.9-compatible dependency-free contract test.
+- Documented Blueprint as Flyto2's independently usable procedure-memory
+  package: it learns, expands, scores, and persists reusable procedures from
+  host-validated outcomes, but never executes them or supplies domain solvers.
 - Added the phase-one provider-neutral Capability Search contract: strict safe
   projection validation; deterministic digest-bound documents and mutations;
   content-free retirement tombstones; explicit prefilter-first query plans;

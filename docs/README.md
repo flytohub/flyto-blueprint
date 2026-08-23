@@ -1,5 +1,11 @@
 # Flyto2 Blueprint Documentation
 
+Blueprint is Flyto2's independently usable procedure-memory package. It owns
+reusable procedure learning and scoring, expansion and compatibility, and
+outcome history. A host supplies validated execution outcomes; Blueprint does
+not execute workflows, govern providers, own hosted accounts, or guess domain
+facts.
+
 ## Integrator Docs
 
 - [Whitepaper](WHITEPAPER.md) explains deterministic expansion, learning,

@@ -1,5 +1,25 @@
 # Decisions
 
+## 2026-08-23 - One product has three independently usable package boundaries
+
+Decision: Flyto2 has one promise and three independently usable packages.
+`flyto-ai` owns intent, provider governance, and routing; `flyto-blueprint`
+owns reusable procedure learning and scoring, procedure expansion and
+compatibility, and procedure outcome history; `flyto-core` owns deterministic
+schema validation, execution, replay, and evidence. Blueprint never executes:
+it persists and ranks procedures only from validated execution outcomes
+supplied by a host.
+
+General packages encode deterministic, verifiable contracts instead of
+pretending mathematics, physics, chemistry, robotics, or any other domain is a
+universal dependency. Domain solvers and their safety or acceptance evidence
+belong in bounded capabilities and hosts.
+
+Reason: a shared product contract makes the package handoffs explicit without
+coupling independent installation or use. Keeping execution outside Blueprint
+prevents procedure memory from turning stored patterns or model language into
+claims that work ran or scientific facts are true.
+
 ## 2026-08-13 - Capability indexing starts with a safe, rebuildable contract
 
 Decision: accept only the exact versioned capability-card projection and emit
