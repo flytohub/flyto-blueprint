@@ -2,8 +2,8 @@
 
 Flyto2 is one product with three independently usable packages. Blueprint is
 layer 2, `procedure_memory`: it accepts host-supplied validated outcomes and
-deterministically stores, expands, learns from, and scores procedures. Flyto AI
-owns intent and provider governance; Flyto Core owns validation, execution,
+deterministically stores, expands, learns from, and scores procedures. Flyto2 AI
+owns intent and provider governance; Flyto2 Core owns validation, execution,
 replay, and evidence. Blueprint never executes a procedure.
 
 This repository is a Python library with four runtime layers and one

@@ -5,16 +5,16 @@
 - `flyto-blueprint` is Flyto2's independently usable layer-2
   `procedure_memory` package. It owns reusable procedure learning and scoring,
   procedure expansion and compatibility, and procedure outcome history. It
-  never executes workflows; intent/provider governance belongs to Flyto AI,
+  never executes workflows; intent/provider governance belongs to Flyto2 AI,
   while deterministic validation, execution, replay, and evidence belong to
-  Flyto Core.
+  Flyto2 Core.
 - Blueprint is evidence-first: hosts supply validated execution outcomes that
   it persists and ranks. It does not guess mathematics, physics, chemistry,
   robotics, or other domain facts; bounded capabilities and hosts own those
   solvers and their acceptance evidence.
 - Phase one of the Blueprint Capability Search Document/Index contract is
   implemented as stateless, provider-neutral JSON-native validation and
-  derivation helpers. It is not wired to Flyto AI, Cloud, Core, a UI, storage,
+  derivation helpers. It is not wired to Flyto2 AI, Cloud, Core, a UI, storage,
   network, an embedding provider, or a vector database. Search results are
   candidate-only and the host still owns authorization and execution.
   The dialect matches upstream v1 192-character safe identifiers, at most 32
@@ -31,7 +31,14 @@
   and routability coherence, and producer-sorted semantic IDs. The producer's
   192-character tenant/space/capability identity remains intact through
   documents, requests, candidates, and cursors.
-- Repository status: active open-source Python package, version 0.2.2.
+- Repository status: active open-source Python package, version 0.3.0 (prepared
+  in the working tree; PyPI still serves 0.2.2 until the `v0.3.0` tag is
+  pushed).
+- Why 0.3.0 exists: `flyto-ai` passes `available_module_ids` only when the
+  installed engine signature accepts it, so the module-availability gate added
+  in 0.2.2+ development was silently inert for every PyPI install -- 0.2.2 has
+  no such parameter. The gate becomes reachable when this release ships, not
+  when it was merged.
 - Stable package root exports `BlueprintEngine`, `StorageBackend`,
   `MemoryBackend`, and `get_engine`.
 - The package ships 33 workflow blueprints, one composition block, six MCP
@@ -128,10 +135,12 @@
 
 ## Release Notes
 
-- This product-contract change does not alter runtime behavior, public APIs,
-  schemas, packaged blueprints, dependencies, version 0.2.2, or Apache-2.0
-  licensing. It is not published or deployed; remote CI remains a separate
-  release gate after commit.
+- The product-contract change did not alter runtime behavior, public APIs,
+  schemas, packaged blueprints, or Apache-2.0 licensing. The 2026-08-23 change
+  does move two dependency floors (`core` extra to `flyto-core>=2.28.1`, the
+  `firestore` extra to bounded ranges) and the version to 0.3.0. Nothing is
+  published or deployed by committing it: the PyPI workflow triggers on a `v*`
+  tag, which is a separate, deliberate step.
 - Publishing to PyPI and provider-side workflow success still require remote
   evidence; local verification cannot prove registry permissions.
 - No official robotics/vision Blueprint may be shipped before repeated trusted

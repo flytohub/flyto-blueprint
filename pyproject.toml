@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "flyto-blueprint"
-version = "0.2.2"
+version = "0.3.0"
 description = "Self-evolving workflow pattern engine for Flyto2"
 readme = "README.md"
 license = "Apache-2.0"
@@ -26,8 +26,13 @@ dependencies = [
 flyto-blueprint-benchmark = "flyto_blueprint.benchmark:main"
 
 [project.optional-dependencies]
-core = ["flyto-core>=2.12.0"]
-firestore = ["google-cloud-firestore", "firebase-admin"]
+# 2.28.1 is the first Core release that clears every published advisory
+# (flyto-core SECURITY_STATUS.md). The old >=2.12.0 floor satisfied itself with
+# releases that predate all 33 of them.
+core = ["flyto-core>=2.28.1"]
+# Floors, like every other dependency here: an unbounded name resolves to
+# whatever exists, including a yanked or pre-1.0 line.
+firestore = ["google-cloud-firestore>=2.19.0,<3", "firebase-admin>=6.5.0,<8"]
 dev = ["pytest>=9.0.3", "pytest-asyncio>=0.21"]
 
 [project.urls]
