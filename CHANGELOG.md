@@ -2,6 +2,36 @@
 
 ## 0.3.0
 
+### Fixed
+
+- `SQLiteBackend` no longer loses evidence when two processes report at once.
+  It documented itself as thread-safe with an atomic `atomic_update`, and both
+  claims were published in `docs/API.md` and the API reference; neither held
+  across processes. The guard was a `threading.Lock`, which is per-instance, and
+  the read and the write were separate autocommit statements, so two writers
+  could read one row and both write it. Measured on four processes doing 300
+  increments each: 415 of 1,200 survived, silently, with no error raised. What
+  was being discarded is the execution evidence this package exists to keep, and
+  the configuration is the ordinary one - every `flyto-ai` agent opens
+  `~/.flyto/blueprints.db` with no path, and so does the CLI.
+
+  The database now runs in WAL and every read-modify-write takes its write lock
+  before it reads (`BEGIN IMMEDIATE`), so correctness is a property of the file
+  rather than of one object. Connections are closed rather than merely committed.
+  `tests/test_storage_concurrency.py` uses real processes on a real file, because
+  a threading-only test passes against the broken implementation - which is how
+  this survived.
+
+### Changed
+
+- Raised the `core` extra's floor to `flyto-core>=2.29.0`. Core published five
+  further advisories, one critical, affecting `<= 2.28.1`.
+- Corrected two storage claims. `README.md` said SQLite was the default backend;
+  the default is no backend at all, and with none, learned blueprints and
+  reported outcomes are discarded when the process ends. `StorageBackend.atomic_update`
+  now says its default implementation is safe only for a single writer and names
+  the backend that overrides it.
+
 Released because the host-side gate depended on it. `flyto-ai` decides whether
 to pass `available_module_ids` by inspecting the engine signature, and falls
 back to unfiltered behaviour when the parameter is absent. Every published

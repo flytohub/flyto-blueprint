@@ -36,8 +36,10 @@ class StorageBackend(ABC):
         """Read-modify-write a blueprint atomically.
 
         The update_fn receives the current data dict and returns the
-        updated dict, or None to abort. Default implementation is
-        non-atomic (load + save); backends can override for true
+        updated dict, or None to abort. This default implementation is
+        non-atomic (load + save) and is safe only for a single writer;
+        SQLiteBackend overrides it with a real transaction. Backends can
+        override for true
         atomicity (e.g. Firestore transactions).
         """
         data = self.load_one(blueprint_id)

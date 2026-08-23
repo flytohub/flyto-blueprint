@@ -2,7 +2,7 @@
 
 # Python Implementation Reference
 
-Generated inventory: **22 modules** and **205 class/function/method declarations**.
+Generated inventory: **22 modules** and **206 class/function/method declarations**.
 
 ## Modules
 
@@ -23,10 +23,10 @@ Generated inventory: **22 modules** and **205 class/function/method declarations
 | [`flyto_blueprint/search.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/search.py#L1) | 165 | 5 | Blueprint listing and search with relevance+quality blending + synonym expansion. |
 | [`flyto_blueprint/sharing.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/sharing.py#L1) | 311 | 10 | Portable, integrity-checked Blueprint bundles for explicit sharing. |
 | [`flyto_blueprint/storage/__init__.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/__init__.py#L1) | 6 | 0 | Internal package module. |
-| [`flyto_blueprint/storage/base.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L1) | 49 | 7 | Abstract storage backend for blueprints. |
+| [`flyto_blueprint/storage/base.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L1) | 51 | 7 | Abstract storage backend for blueprints. |
 | [`flyto_blueprint/storage/firestore.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/firestore.py#L1) | 79 | 10 | Google Firestore storage backend for blueprints (flyto-cloud adapter). |
 | [`flyto_blueprint/storage/memory.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/memory.py#L1) | 51 | 8 | In-memory storage backend for tests and ephemeral use. |
-| [`flyto_blueprint/storage/sqlite.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L1) | 110 | 10 | SQLite storage backend for blueprints. |
+| [`flyto_blueprint/storage/sqlite.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L1) | 171 | 11 | SQLite storage backend for blueprints. |
 | [`flyto_blueprint/template.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/template.py#L1) | 103 | 4 | Template substitution for {{arg}} placeholders. |
 | [`flyto_blueprint/tools.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/tools.py#L1) | 153 | 1 | MCP tool definitions for blueprint operations. |
 | [`flyto_blueprint/validate.py:1`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/validate.py#L1) | 48 | 2 | Optional flyto-core module validation for expanded steps. |
@@ -274,7 +274,7 @@ Generated inventory: **22 modules** and **205 class/function/method declarations
 | method | `def StorageBackend.update(self, blueprint_id: str, fields: dict) -> None` | Update specific fields of a blueprint. | [`flyto_blueprint/storage/base.py:20`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L20) |
 | method | `def StorageBackend.load_one(self, blueprint_id: str) -> Optional[dict]` | Load a single blueprint by ID. Returns None if not found. | [`flyto_blueprint/storage/base.py:24`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L24) |
 | method | `def StorageBackend.delete(self, blueprint_id: str) -> None` | Delete a blueprint by ID. | [`flyto_blueprint/storage/base.py:28`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L28) |
-| method | `def StorageBackend.atomic_update(self, blueprint_id: str, update_fn: Callable[[dict], Optional[dict]]) -> Optional[dict]` | Read-modify-write a blueprint atomically. The update_fn receives the current data dict and returns the updated dict, or None to abort. Default implementation is non-atomic (load + save); backends can override for true atomicity (e.g. Fir... | [`flyto_blueprint/storage/base.py:31`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L31) |
+| method | `def StorageBackend.atomic_update(self, blueprint_id: str, update_fn: Callable[[dict], Optional[dict]]) -> Optional[dict]` | Read-modify-write a blueprint atomically. The update_fn receives the current data dict and returns the updated dict, or None to abort. This default implementation is non-atomic (load + save) and is safe only for a single writer; SQLiteBa... | [`flyto_blueprint/storage/base.py:31`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/base.py#L31) |
 
 ## `flyto_blueprint/storage/firestore.py`
 
@@ -308,16 +308,17 @@ Generated inventory: **22 modules** and **205 class/function/method declarations
 
 | Kind | Signature | Responsibility | Source |
 |---|---|---|---|
-| class | `class SQLiteBackend(StorageBackend)` | Persists blueprints in a local SQLite database. Thread-safe via a threading lock around writes. | [`flyto_blueprint/storage/sqlite.py:15`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L15) |
-| method | `def SQLiteBackend.__init__(self, db_path: Optional[str]=None) -> None` | Initialize SQLite backend, creating the database file if needed. | [`flyto_blueprint/storage/sqlite.py:21`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L21) |
-| method | `def SQLiteBackend._connect(self) -> sqlite3.Connection` | Open a new SQLite connection to the database file. | [`flyto_blueprint/storage/sqlite.py:28`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L28) |
-| method | `def SQLiteBackend._init_db(self) -> None` | Create the blueprints table if it does not exist. | [`flyto_blueprint/storage/sqlite.py:32`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L32) |
-| method | `def SQLiteBackend.load_all(self) -> List[dict]` | Load and deserialize all blueprints from the database. | [`flyto_blueprint/storage/sqlite.py:43`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L43) |
-| method | `def SQLiteBackend.save(self, blueprint_id: str, data: dict) -> None` | Serialize and upsert a blueprint row. | [`flyto_blueprint/storage/sqlite.py:49`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L49) |
-| method | `def SQLiteBackend.update(self, blueprint_id: str, fields: dict) -> None` | Merge *fields* into the stored JSON blob for *blueprint_id*. | [`flyto_blueprint/storage/sqlite.py:59`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L59) |
-| method | `def SQLiteBackend.load_one(self, blueprint_id: str) -> Optional[dict]` | Load a single blueprint by ID, or return None if not found. | [`flyto_blueprint/storage/sqlite.py:75`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L75) |
-| method | `def SQLiteBackend.delete(self, blueprint_id: str) -> None` | Delete the blueprint row for *blueprint_id*. | [`flyto_blueprint/storage/sqlite.py:83`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L83) |
-| method | `def SQLiteBackend.atomic_update(self, blueprint_id: str, update_fn: Callable[[dict], Optional[dict]]) -> Optional[dict]` | Read-modify-write under a threading lock for thread safety. | [`flyto_blueprint/storage/sqlite.py:89`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L89) |
+| class | `class SQLiteBackend(StorageBackend)` | Persists blueprints in a local SQLite database. Safe across threads **and processes**. That distinction is the reason this class looks the way it does: the default database path is shared, and the host that uses it opens one per process.... | [`flyto_blueprint/storage/sqlite.py:20`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L20) |
+| method | `def SQLiteBackend.__init__(self, db_path: Optional[str]=None) -> None` | Initialize SQLite backend, creating the database file if needed. | [`flyto_blueprint/storage/sqlite.py:49`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L49) |
+| method | `def SQLiteBackend._connect(self) -> sqlite3.Connection` | Open a connection with cross-process settings applied. ``isolation_level=None`` turns off the driver's implicit transaction handling so this module can state its own boundaries; without it the ``BEGIN IMMEDIATE`` below would be issued in... | [`flyto_blueprint/storage/sqlite.py:56`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L56) |
+| method | `def SQLiteBackend._write_transaction(self) -> Iterator[sqlite3.Connection]` | Run a block as one exclusive read-modify-write transaction. ``BEGIN IMMEDIATE`` acquires the write lock up front, so a concurrent writer waits at the ``BEGIN`` instead of reading a value this block is about to replace. A deferred transac... | [`flyto_blueprint/storage/sqlite.py:76`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L76) |
+| method | `def SQLiteBackend._init_db(self) -> None` | Create the blueprints table if it does not exist. | [`flyto_blueprint/storage/sqlite.py:93`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L93) |
+| method | `def SQLiteBackend.load_all(self) -> List[dict]` | Load and deserialize all blueprints from the database. | [`flyto_blueprint/storage/sqlite.py:103`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L103) |
+| method | `def SQLiteBackend.save(self, blueprint_id: str, data: dict) -> None` | Serialize and upsert a blueprint row. | [`flyto_blueprint/storage/sqlite.py:109`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L109) |
+| method | `def SQLiteBackend.update(self, blueprint_id: str, fields: dict) -> None` | Merge *fields* into the stored JSON blob for *blueprint_id*. | [`flyto_blueprint/storage/sqlite.py:118`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L118) |
+| method | `def SQLiteBackend.load_one(self, blueprint_id: str) -> Optional[dict]` | Load a single blueprint by ID, or return None if not found. | [`flyto_blueprint/storage/sqlite.py:133`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L133) |
+| method | `def SQLiteBackend.delete(self, blueprint_id: str) -> None` | Delete the blueprint row for *blueprint_id*. | [`flyto_blueprint/storage/sqlite.py:141`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L141) |
+| method | `def SQLiteBackend.atomic_update(self, blueprint_id: str, update_fn: Callable[[dict], Optional[dict]]) -> Optional[dict]` | Read-modify-write inside one exclusive transaction. Atomic against other threads *and* other processes. ``update_fn`` runs while the write lock is held, so it must not block on anything slow -- it is expected to be pure bookkeeping on th... | [`flyto_blueprint/storage/sqlite.py:146`](https://github.com/flytohub/flyto-blueprint/blob/main/flyto_blueprint/storage/sqlite.py#L146) |
 
 ## `flyto_blueprint/template.py`
 

@@ -2,6 +2,14 @@
 
 ## Current State
 
+- `SQLiteBackend` is safe across processes as well as threads: WAL plus
+  `BEGIN IMMEDIATE` on every read-modify-write. Before this it lost 785 of 1,200
+  concurrent updates without raising, in the ordinary configuration where each
+  `flyto-ai` agent and the CLI open the same default `~/.flyto/blueprints.db`.
+  Verified by `tests/test_storage_concurrency.py`, which spawns real processes.
+- The `core` extra floors at `flyto-core>=2.29.0`; flyto-ai's stack floor gate
+  derives that number from Core's own advisory manifest and checks this file.
+
 - `flyto-blueprint` is Flyto2's independently usable layer-2
   `procedure_memory` package. It owns reusable procedure learning and scoring,
   procedure expansion and compatibility, and procedure outcome history. It

@@ -26,10 +26,14 @@ dependencies = [
 flyto-blueprint-benchmark = "flyto_blueprint.benchmark:main"
 
 [project.optional-dependencies]
-# 2.28.1 is the first Core release that clears every published advisory
-# (flyto-core SECURITY_STATUS.md). The old >=2.12.0 floor satisfied itself with
-# releases that predate all 33 of them.
-core = ["flyto-core>=2.28.1"]
+# 2.29.0 is the first Core release that clears every published advisory. The
+# number is not a constant to keep in step by hand: flyto-ai's
+# tests/test_stack_security_floor.py derives it from flyto-core's own
+# security/advisories.json and checks this file too, because flyto-ai's CI is the
+# only place in the stack with all three checkouts present. It moved from 2.28.1
+# when Core published five more advisories, one of them critical, against
+# <= 2.28.1.
+core = ["flyto-core>=2.29.0"]
 # Floors, like every other dependency here: an unbounded name resolves to
 # whatever exists, including a yanked or pre-1.0 line.
 firestore = ["google-cloud-firestore>=2.19.0,<3", "firebase-admin>=6.5.0,<8"]

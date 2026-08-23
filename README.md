@@ -226,8 +226,14 @@ never place them in blueprint YAML or committed examples.
 
 ## Storage Backends
 
+`BlueprintEngine()` takes no backend by default, and with no backend nothing is
+persisted: learned blueprints and reported outcomes live for the lifetime of the
+process and are then discarded. Pass one explicitly to keep them.
+
 - **MemoryBackend** — In-memory, great for tests
-- **SQLiteBackend** — File-based persistence (default)
+- **SQLiteBackend** — File-based persistence; safe across threads and processes
+  (WAL plus an immediate transaction around every read-modify-write), so several
+  hosts may share one database file
 - **FirestoreBackend** — Google Firestore (for flyto-cloud)
 
 ## Testing

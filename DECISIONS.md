@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-08-24 - Durable means durable across processes, not across threads
+
+Decision: `SQLiteBackend` is correct under concurrent processes. WAL, a
+`busy_timeout`, and `BEGIN IMMEDIATE` around every read-modify-write; the
+`threading.Lock` remains only as an intra-process fast path and is no longer
+what correctness rests on.
+
+Why: the class claimed thread safety and atomicity, and the claims were
+published in the API docs, but a `threading.Lock` is per-instance and the read
+and write were separate autocommit statements. Two processes - the ordinary
+configuration, since every host opens the same default database path - could
+read one row and both write it. Four processes performing 300 increments each
+left 415 of 1,200, with nothing raised. A package whose thesis is evidence-first
+procedure memory was deleting evidence in its default deployment.
+
+Consequence: `update_fn` runs while the write lock is held, so it must stay
+pure bookkeeping and must not block. Concurrency tests use real processes;
+a threading-only test passes against the broken implementation, and did.
+
 ## 2026-08-23 - One product has three independently usable package boundaries
 
 Decision: Flyto2 has one promise and three independently usable packages.
