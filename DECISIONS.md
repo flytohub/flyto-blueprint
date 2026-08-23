@@ -19,6 +19,40 @@ Consequence: `update_fn` runs while the write lock is held, so it must stay
 pure bookkeeping and must not block. Concurrency tests use real processes;
 a threading-only test passes against the broken implementation, and did.
 
+## 2026-08-23 - Verified procedure learning requires an exact host receipt
+
+Decision: `learn_from_execution` and every non-community `report_outcome`
+accept only the bounded, exact
+`flyto.execution-verification-receipt.v1` JSON shape binding `success=true`,
+`status=verified`, a safe evidence identifier, and a lowercase SHA-256 evidence
+digest to a detached bounded JSON evidence object. Canonicalize that object as
+sorted-key compact UTF-8 JSON with finite exact JSON types and bounded bytes,
+depth, nodes, strings, and integers; recompute SHA-256 and require an exact
+lowercase match. Validate it before workflow fingerprinting, deduplication, persistence,
+score/trust promotion, or mutation. Keep `learn_from_workflow` explicitly
+community/unverified and mark learned/list/search results as having no execution
+authority.
+
+For trusted outcome scoring, the canonical nested evidence must contain an
+exact boolean `outcome_success` equal to the public `success` argument. The
+top-level `success=true` and `status=verified` bind the host verification claim,
+not the observed workflow result. A solver receipt without `outcome_success`
+therefore remains sufficient for verified learning but cannot change trusted
+outcome state. Receipt validation precedes recent-report deduplication and all
+score, count, trust, evidence-window, retirement, persistence, or other state
+mutation. Community reports keep isolated counters and never enter this trust
+path.
+
+Blueprint validates internal receipt integrity plus a host-supplied verified
+claim and stores procedure memory; it does not prove an external event, call Core,
+execute a domain solver, use hardware/network/LLM access, or approve execution.
+The generic envelope imports no Core code, so a Core domain solver may return
+the same envelope directly.
+
+Reason: arbitrary caller metadata previously became verified memory. An exact
+versioned, content-bound receipt makes the host boundary deterministic and fail-closed without
+coupling this independently usable package to any executor.
+
 ## 2026-08-23 - One product has three independently usable package boundaries
 
 Decision: Flyto2 has one promise and three independently usable packages.

@@ -39,6 +39,20 @@ Boundary:
   without guessing domain facts. Mathematics, physics, chemistry, robotics,
   and other domain solvers belong in bounded capabilities and hosts, not this
   general procedure-memory package.
+- Verified learning and every non-community outcome report accept only the exact bounded
+  `flyto.execution-verification-receipt.v1` host receipt before fingerprinting,
+  deduplication, persistence, or score/trust promotion. Its detached bounded
+  JSON evidence object is canonicalized with sorted keys and compact UTF-8
+  encoding, then its SHA-256 is recomputed and compared exactly. This proves
+  internal receipt integrity plus a host-supplied verified claim, not the
+  external software or physical event. Learned/list/search surfaces state
+  `execution_authority=false`. Blueprint never calls Core, a solver, hardware,
+  a network, or an LLM and never grants execution approval.
+  Trusted outcome receipts additionally carry an exact boolean nested
+  `outcome_success` equal to the reported result; the envelope's top-level
+  `success=true` and `status=verified` describe only the host verification
+  claim. Validation precedes outcome deduplication and every score, counter,
+  trust, evidence-window, retirement, storage, or other state mutation.
 - Product lines: cloud_apps_automation, data, zero_person_agent
 - Phase-one capability search is a provider-neutral contract layer in
   `flyto_blueprint.intent`. It validates one exact safe catalogue projection,

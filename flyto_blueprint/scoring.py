@@ -9,6 +9,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from flyto_blueprint.execution_verification import validate_execution_verification_receipt
 from flyto_blueprint.storage.base import StorageBackend
 
 logger = logging.getLogger(__name__)
@@ -132,6 +133,7 @@ def report_outcome(
     recent_reports: Optional[Dict[str, float]] = None,
     evidence_tier: str = "local_verified",
     evidence: Optional[dict] = None,
+    verification: Optional[dict] = None,
 ) -> dict:
     """Report whether a blueprint-generated workflow succeeded or failed.
 
@@ -144,11 +146,33 @@ def report_outcome(
     """
     if evidence_tier not in _TRUST_TIER_RANK:
         return {"ok": False, "error": "Unknown evidence tier '{}'".format(evidence_tier)}
+    if type(success) is not bool:
+        return {
+            "ok": False,
+            "code": "INVALID_OUTCOME_SUCCESS",
+            "error": "reported outcome success must be an exact boolean",
+        }
     if evidence_tier == "community" and not execution_id:
         return {
             "ok": False,
             "error": "Community observations require an execution_id",
         }
+
+    canonical_receipt = None
+    if evidence_tier != "community":
+        try:
+            canonical_receipt = validate_execution_verification_receipt(
+                verification,
+                expected_outcome_success=success,
+                require_outcome_success=True,
+            )
+        except ValueError as exc:
+            return {
+                "ok": False,
+                "code": "INVALID_EXECUTION_VERIFICATION_RECEIPT",
+                "error": str(exc),
+                "execution_authority": False,
+            }
 
     bp = blueprints.get(blueprint_id)
     if not bp:
@@ -194,7 +218,7 @@ def report_outcome(
     bp["last_evidence_tier"] = evidence_tier
     bp["last_verified_at"] = datetime.now(timezone.utc).isoformat()
     normalized_evidence = _normalize_evidence(
-        evidence,
+        canonical_receipt["evidence"],
         success=success,
         evidence_tier=evidence_tier,
         execution_id=execution_id,

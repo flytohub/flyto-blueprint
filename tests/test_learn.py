@@ -12,10 +12,10 @@ class TestLearnFromWorkflow:
         assert result["data"]["score"] == 50
         assert result["data"].get("use_count", 0) == 0
 
-    def test_verified_gets_score_70(self, engine):
+    def test_verified_flag_requires_execution_receipt(self, engine):
         result = engine.learn_from_workflow(make_workflow(), name="verified", verified=True)
-        assert result["ok"] is True
-        assert result["data"]["score"] == 70
+        assert result["ok"] is False
+        assert result["code"] == "EXECUTION_VERIFICATION_RECEIPT_REQUIRED"
 
     def test_rejects_under_3_steps(self, engine):
         short = {"steps": [

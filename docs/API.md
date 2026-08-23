@@ -127,13 +127,50 @@ Abstracts concrete workflow values into reusable arguments, fingerprints the
 structure, boosts an existing match when deduplicated, and persists a new
 blueprint when storage is configured. `compatibility` scopes structurally
 identical patterns to a repository, framework, runtime, or environment;
-`verification` stores non-secret evidence metadata.
+`verification` stores non-secret community metadata. This is the explicit
+community/unverified path: `verified=True` or a non-community `trust_tier` is
+rejected and directs the caller to `learn_from_execution`.
 
 ### `learn_from_execution(...)`
 
-Convenience method for a successful execution. It delegates to
-`learn_from_workflow(..., verified=True)` and starts the learned pattern with a
-`local_verified` trust tier.
+`learn_from_execution` requires `verification` to be this exact receipt:
+
+```python
+{
+    "receipt_version": "flyto.execution-verification-receipt.v1",
+    "success": True,
+    "status": "verified",
+    "evidence_id": "solver-run-123",
+    "evidence_sha256": "<64 lowercase hexadecimal characters>",
+    "evidence": {
+        "solver": "geometry.rectangle_area",
+        "assumptions": ["euclidean plane"],
+        "result": {"value": 12, "unit": "m^2"},
+    },
+}
+```
+
+All six fields are required, unknown receipt fields are rejected, and
+`evidence_id` is 1–192 safe ASCII characters. Missing, failed, unverified, contradictory,
+non-object, non-JSON, non-finite, oversized, or malformed receipts fail with
+`INVALID_EXECUTION_VERIFICATION_RECEIPT` before fingerprinting, deduplication,
+persistence, score promotion, or mutation.
+
+`evidence` is a detached JSON object. Its digest covers exactly its UTF-8 JSON
+encoding with keys sorted, compact `,`/`:` separators, and non-ASCII text left
+as UTF-8. Blueprint permits only exact JSON types and rejects non-finite
+numbers, integers outside ±(2^53−1), strings longer than 4,096 characters,
+more than 12 levels, more than 2,048 nodes, or more than 32,768 encoded bytes.
+It recomputes SHA-256 over that exact canonical evidence and requires the
+lowercase digest to equal `evidence_sha256`.
+
+This proves only internal receipt integrity plus the host-supplied claim that
+verification occurred. It does not prove the underlying software or physical
+event, call Flyto2 Core, execute a solver or procedure, access hardware,
+network, or an LLM, or grant execution approval. A Core domain solver can
+return the same generic envelope directly; this package imports no Core code.
+Learned responses and every list/search summary state `execution_authority:
+false`.
 
 ### `report_outcome(...)`
 
@@ -144,16 +181,30 @@ engine.report_outcome(
     execution_id="",
     evidence_tier="local_verified",
     evidence=None,
+    verification=None,
 )
 ```
 
 Trusted evidence (`local_verified`, `ci_verified`, or `official`) updates the
-primary score. `community` evidence requires an execution identifier and
+primary score only when `verification` is a valid receipt in the exact shape
+documented above. Its canonical nested `evidence` must include
+`"outcome_success": true` or `false`, using an exact JSON boolean equal to the
+`success` argument. Top-level `success=true` and `status=verified` mean the
+host verification claim succeeded; they do not assert that the workflow result
+was successful. A receipt without `outcome_success` remains valid for
+`learn_from_execution` but is insufficient for trusted scoring.
+
+Missing, invalid, digest-stale, unsafe, or outcome-mismatched trusted receipts
+return `INVALID_EXECUTION_VERIFICATION_RECEIPT`. A non-boolean `success`
+returns `INVALID_OUTCOME_SUCCESS`. Both fail before recent-report deduplication,
+score/count/trust changes, evidence samples, retirement, or persistence.
+`community` evidence requires an execution identifier and
 updates separate Bayesian counters; it can influence ranking within a bounded
 confidence cap but cannot rewrite the trusted score. Recent execution
 identifiers are deduplicated.
 
-For trusted runtime reports, `evidence` may contain only these measured facts:
+For trusted runtime reports, only these fields from the receipt's canonical
+nested `evidence` are normalized into a detailed sample:
 
 | Field | Meaning |
 |---|---|

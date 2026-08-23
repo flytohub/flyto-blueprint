@@ -28,6 +28,7 @@ class Blueprint(BaseModel):
     score: int = 50
     compatibility: Dict[str, Any] = Field(default_factory=dict)
     verification: Dict[str, Any] = Field(default_factory=dict)
+    execution_authority: bool = False
     provenance: Dict[str, Any] = Field(default_factory=dict)
     evidence_samples: List[Dict[str, Any]] = Field(default_factory=list)
     use_count: int = 0
@@ -63,3 +64,4 @@ class BlueprintSummary(BaseModel):
     community_success_rate: Optional[float] = None
     compatibility: Dict[str, Any] = Field(default_factory=dict)
     evidence_card: Dict[str, Any] = Field(default_factory=dict)
+    execution_authority: bool = False

@@ -7,7 +7,7 @@ import json
 
 import pytest
 
-from conftest import make_workflow, make_workflow_alt
+from conftest import make_workflow, make_workflow_alt, verification_receipt
 from flyto_blueprint.intent import (
     CapabilitySearchBoundaryError,
     build_capability_search_document,
@@ -532,6 +532,7 @@ class TestListAndSearch:
                 "repository": "flytohub/payments-api",
                 "framework": "fastapi",
             },
+            verification=verification_receipt("repo-context"),
         )
 
         results = engine.search("payments-api")

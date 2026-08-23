@@ -21,6 +21,7 @@ def bp_summary(bp: dict) -> dict:
         "description": bp.get("description", ""),
         "tags": bp.get("tags", []),
         "module_ids": _module_ids(bp),
+        "execution_authority": False,
         "args": {
             name: {
                 "type": meta.get("type", "string"),

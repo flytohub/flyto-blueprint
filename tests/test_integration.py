@@ -4,6 +4,7 @@
 from flyto_blueprint import BlueprintEngine
 from flyto_blueprint.storage.memory import MemoryBackend
 from flyto_blueprint.storage.sqlite import SQLiteBackend
+from conftest import outcome_receipt, verification_receipt
 
 
 class TestFullLifecycleMemory:
@@ -34,7 +35,9 @@ class TestFullLifecycleMemory:
         assert expand_result["data"].get("source_blueprint_id") == bp_id
 
         # 3. Report success (score starts at 50, +5 = 55)
-        outcome = engine.report_outcome(bp_id, success=True)
+        outcome = engine.report_outcome(
+            bp_id, success=True, verification=outcome_receipt(True, "integration-success"),
+        )
         assert outcome["score"] == 55
 
     def test_learn_expand_report_search_verified(self):
@@ -48,11 +51,15 @@ class TestFullLifecycleMemory:
                 {"id": "s3", "module": "array.sort", "params": {"array": [3, 1]}},
             ],
         }
-        learn_result = engine.learn_from_workflow(wf, name="verified_int", verified=True)
+        learn_result = engine.learn_from_execution(
+            wf, name="verified_int", verification=verification_receipt("verified-int"),
+        )
         bp_id = learn_result["data"]["id"]
         assert learn_result["data"]["score"] == 70
 
-        engine.report_outcome(bp_id, success=True)
+        engine.report_outcome(
+            bp_id, success=True, verification=outcome_receipt(True, "verified-success"),
+        )
         assert engine._blueprints[bp_id]["score"] == 75
 
         # Search should find it

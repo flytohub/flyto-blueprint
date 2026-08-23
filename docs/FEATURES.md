@@ -109,17 +109,24 @@ arguments actually resolve to. See
 
 ## Workflow Learning
 
-Learning fingerprints successful workflows, abstracts concrete values into
-parameters, deduplicates existing patterns, and records provenance and score
-metadata. It does not train a remote model or upload workflow content by
-itself. Compatibility metadata scopes reuse to repositories, frameworks, and
-runtimes; retry and assertion contracts survive learning and expansion. In
-other words, Blueprint learns procedures and evidence—not model weights.
+Verified learning first validates an exact, bounded v1 host receipt binding
+`success=true`, `status=verified`, an evidence identifier, and a SHA-256
+digest to a detached, solver-shaped JSON evidence object. The digest covers
+the object's sorted-key, compact UTF-8 JSON encoding and is recomputed before
+learning. Invalid receipts are rejected before fingerprinting,
+deduplication, persistence, or scoring. `learn_from_workflow` remains the
+explicit community/unverified route. Blueprint validates the host claim's
+internal integrity; it does not prove the external software or physical event,
+train a model, execute a solver, contact Core, hardware, a network, or an LLM,
+or grant execution approval. The envelope is generic and has no Core import.
 
 ## Outcome Scoring
 
 Trusted local, CI, and official success/failure evidence updates the primary
-score. Community outcomes require execution identifiers and update separate
+score only after an exact digest-validated receipt binds nested boolean
+`outcome_success` to the reported result. Validation occurs before deduplication
+or any trusted mutation; a learning receipt without that field cannot score an
+outcome. Community outcomes require execution identifiers and update separate
 Bayesian counters. Their confidence-weighted ranking adjustment is capped, so
 shared observations improve discovery without being able to overwrite trusted
 quality. Duplicate recent execution reports are rejected. Only trusted reports

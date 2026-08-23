@@ -205,6 +205,7 @@ def _build_blueprint_dict(
     bp["context_fingerprint"] = context_fingerprint
     bp["compatibility"] = copy.deepcopy(compatibility or {})
     bp["verification"] = copy.deepcopy(verification or {})
+    bp["execution_authority"] = False
     bp["trust_tier"] = trust_tier
     bp["provenance"] = {
         "origin": "local_execution" if verified else "local_workflow",

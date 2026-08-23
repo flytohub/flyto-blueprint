@@ -86,13 +86,29 @@ def run_longitudinal_evidence(
 
     storage = SQLiteBackend(db_path=str(database))
     engine = BlueprintEngine(storage=storage)
-    learned = engine.learn_from_workflow(
+    initial_evidence = {
+        "solver": "flyto-blueprint.longitudinal",
+        "result": {"workflow": workflow, "accepted": True},
+        "assumptions": ["host supplied verified execution"],
+    }
+    learned = engine.learn_from_execution(
         workflow,
         blueprint_id=blueprint_id,
         name="Longitudinal real lifecycle",
         tags=["longitudinal", "lifecycle", "sqlite"],
-        verified=True,
-        trust_tier="ci_verified",
+        verification={
+            "receipt_version": "flyto.execution-verification-receipt.v1",
+            "success": True,
+            "status": "verified",
+            "evidence_id": "{}-initial".format(run_id),
+            "evidence_sha256": hashlib.sha256(
+                json.dumps(
+                    initial_evidence, ensure_ascii=False, allow_nan=False,
+                    sort_keys=True, separators=(",", ":"),
+                ).encode("utf-8")
+            ).hexdigest(),
+            "evidence": initial_evidence,
+        },
     )
     if not learned.get("ok"):
         raise RuntimeError("real lifecycle could not learn the Blueprint")
@@ -101,12 +117,16 @@ def run_longitudinal_evidence(
 
     promotion_scores = []
     for index in range(success_reports):
+        outcome_evidence = _execution_evidence(success=True)
         outcome = engine.report_outcome(
             blueprint_id,
             True,
             execution_id="{}-success-{}".format(run_id, index),
             evidence_tier="ci_verified",
-            evidence=_execution_evidence(success=True),
+            evidence=outcome_evidence,
+            verification=_verification_receipt(
+                "{}-success-{}".format(run_id, index), outcome_evidence,
+            ),
         )
         if not outcome.get("ok"):
             raise RuntimeError("trusted success report failed")
@@ -128,12 +148,16 @@ def run_longitudinal_evidence(
     downgrade_scores = []
     failure_index = 0
     while not _required_record(storage, blueprint_id).get("retired"):
+        outcome_evidence = _execution_evidence(success=False)
         outcome = engine.report_outcome(
             blueprint_id,
             False,
             execution_id="{}-failure-{}".format(run_id, failure_index),
             evidence_tier="ci_verified",
-            evidence=_execution_evidence(success=False),
+            evidence=outcome_evidence,
+            verification=_verification_receipt(
+                "{}-failure-{}".format(run_id, failure_index), outcome_evidence,
+            ),
         )
         if not outcome.get("ok"):
             raise RuntimeError("trusted failure report failed")
@@ -338,8 +362,26 @@ def _score(record: Mapping[str, Any]) -> int:
     return value
 
 
+def _verification_receipt(evidence_id: str, evidence: Mapping[str, Any]) -> dict:
+    """Bind one bounded longitudinal outcome to a canonical host receipt."""
+    detached = dict(evidence)
+    encoded = json.dumps(
+        detached, ensure_ascii=False, allow_nan=False,
+        sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")
+    return {
+        "receipt_version": "flyto.execution-verification-receipt.v1",
+        "success": True,
+        "status": "verified",
+        "evidence_id": evidence_id,
+        "evidence_sha256": hashlib.sha256(encoded).hexdigest(),
+        "evidence": detached,
+    }
+
+
 def _execution_evidence(*, success: bool) -> dict:
     return {
+        "outcome_success": success,
         "duration_ms": 1,
         "step_count": 3,
         "total_attempts": 3,

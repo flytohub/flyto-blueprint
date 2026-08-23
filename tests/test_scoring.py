@@ -1,10 +1,57 @@
 # Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Tests for +5/-10 scoring, caps, auto-retire, and execution_id dedup."""
-from conftest import make_workflow
+from conftest import make_workflow, outcome_receipt
+from flyto_blueprint.scoring import report_outcome
+
+
+def trusted_report(engine, blueprint_id, success, **kwargs):
+    evidence = kwargs.pop("evidence", None)
+    return engine.report_outcome(
+        blueprint_id,
+        success,
+        evidence=evidence,
+        verification=outcome_receipt(success, evidence=evidence),
+        **kwargs,
+    )
 
 
 class TestReportOutcome:
+
+    def test_direct_scoring_call_requires_receipt_and_valid_call_changes_score(self):
+        blueprints = {"direct": {"id": "direct", "score": 50, "trust_tier": "community"}}
+        recent = {}
+
+        rejected = report_outcome(
+            "direct", True, blueprints, execution_id="direct-rejected",
+            recent_reports=recent,
+        )
+        accepted = report_outcome(
+            "direct", False, blueprints, execution_id="direct-failure",
+            recent_reports=recent,
+            verification=outcome_receipt(False, "direct-failure"),
+        )
+
+        assert rejected["code"] == "INVALID_EXECUTION_VERIFICATION_RECEIPT"
+        assert "direct-rejected" not in recent
+        assert accepted["score"] == 40
+        assert blueprints["direct"]["fail_count"] == 1
+
+    def test_valid_trusted_success_and_failure_change_score(self):
+        blueprints = {"direct": {"id": "direct", "score": 50, "trust_tier": "community"}}
+
+        success = report_outcome(
+            "direct", True, blueprints,
+            verification=outcome_receipt(True, "direct-success"),
+        )
+        failure = report_outcome(
+            "direct", False, blueprints,
+            verification=outcome_receipt(False, "direct-failure-2"),
+        )
+
+        assert success["score"] == 55
+        assert success["trust_tier"] == "local_verified"
+        assert failure["score"] == 45
 
     def _create_blueprint(self, engine, name="outcome"):
         result = engine.learn_from_workflow(make_workflow(), name=name)

@@ -3,6 +3,8 @@
 """Tests for portable Blueprint bundles and trust quarantine."""
 import copy
 
+from conftest import verification_receipt
+
 from flyto_blueprint import BlueprintEngine
 from flyto_blueprint.sharing import (
     blueprint_definition_digest,
@@ -173,10 +175,7 @@ def test_engine_round_trip_preserves_repo_compatibility():
             "framework": "fastapi",
             "python": ">=3.10",
         },
-        verification={
-            "commands": ["pytest", "ruff check ."],
-            "evidence_id": "ci-run-123",
-        },
+        verification=verification_receipt("ci-run-123"),
     )
 
     exported = source.export_blueprint(
@@ -195,10 +194,7 @@ def test_engine_round_trip_preserves_repo_compatibility():
     assert imported["trust_tier"] == "ci_verified"
     imported_id = imported["data"]["id"]
     assert target._blueprints[imported_id]["compatibility"]["framework"] == "fastapi"
-    assert target._blueprints[imported_id]["verification"]["commands"] == [
-        "pytest",
-        "ruff check .",
-    ]
+    assert target._blueprints[imported_id]["verification"]["evidence_id"] == "ci-run-123"
 
 
 def test_same_structure_in_different_repositories_is_not_deduplicated():
@@ -212,11 +208,13 @@ def test_same_structure_in_different_repositories_is_not_deduplicated():
         workflow,
         name="repo_a",
         compatibility={"repository": "flytohub/repo-a"},
+        verification=verification_receipt("repo-a"),
     )
     second = engine.learn_from_execution(
         workflow,
         name="repo_b",
         compatibility={"repository": "flytohub/repo-b"},
+        verification=verification_receipt("repo-b", {"solver": "repo-b", "result": {"value": 2}}),
     )
 
     assert first["data"]["id"] != second["data"]["id"]

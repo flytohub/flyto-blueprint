@@ -12,6 +12,9 @@ from flyto_blueprint.availability import (
     normalize_available_module_ids,
 )
 from flyto_blueprint.compose import expand_blueprint
+from flyto_blueprint.execution_verification import (
+    validate_execution_verification_receipt,
+)
 from flyto_blueprint.learn import learn_from_workflow as _learn
 from flyto_blueprint.loader import load_blocks, load_builtins
 from flyto_blueprint.scoring import boost_score, record_use, report_outcome
@@ -193,7 +196,32 @@ class BlueprintEngine:
         verification: Optional[dict] = None,
         trust_tier: Optional[str] = None,
     ) -> dict:
-        """Abstract a workflow into a reusable blueprint. Persists to storage."""
+        """Learn an explicitly community/unverified reusable workflow."""
+        if verified is not False or trust_tier not in (None, "community"):
+            return {
+                "ok": False,
+                "code": "EXECUTION_VERIFICATION_RECEIPT_REQUIRED",
+                "error": "verified learning requires learn_from_execution with a valid receipt",
+                "execution_authority": False,
+            }
+        return self._learn_and_persist(
+            workflow=workflow, blueprint_id=blueprint_id, name=name, tags=tags,
+            verified=False, compatibility=compatibility,
+            verification=verification, trust_tier="community",
+        )
+
+    def _learn_and_persist(
+        self,
+        workflow: dict,
+        blueprint_id: Optional[str] = None,
+        name: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        verified: bool = False,
+        compatibility: Optional[dict] = None,
+        verification: Optional[dict] = None,
+        trust_tier: Optional[str] = None,
+    ) -> dict:
+        """Run the shared learning path after its public trust gate."""
         result = _learn(
             workflow, self._blueprints, self._blocks,
             blueprint_id=blueprint_id, name=name, tags=tags, verified=verified,
@@ -226,19 +254,34 @@ class BlueprintEngine:
     def learn_from_execution(
         self,
         workflow: dict,
+        blueprint_id: Optional[str] = None,
         name: Optional[str] = None,
         tags: Optional[List[str]] = None,
         compatibility: Optional[dict] = None,
         verification: Optional[dict] = None,
     ) -> dict:
-        """Learn from a successful execution (verified, initial score 70)."""
-        return self.learn_from_workflow(
+        """Learn from a host-verified execution receipt (initial score 70).
+
+        Blueprint validates only the receipt contract; it does not prove the
+        underlying event or grant execution authority.
+        """
+        try:
+            receipt = validate_execution_verification_receipt(verification)
+        except ValueError as exc:
+            return {
+                "ok": False,
+                "code": "INVALID_EXECUTION_VERIFICATION_RECEIPT",
+                "error": str(exc),
+                "execution_authority": False,
+            }
+        return self._learn_and_persist(
             workflow=workflow,
+            blueprint_id=blueprint_id,
             name=name,
             tags=tags,
             verified=True,
             compatibility=compatibility,
-            verification=verification,
+            verification=receipt,
             trust_tier="local_verified",
         )
 
@@ -249,13 +292,15 @@ class BlueprintEngine:
         execution_id: str = "",
         evidence_tier: str = "local_verified",
         evidence: Optional[dict] = None,
+        verification: Optional[dict] = None,
     ) -> dict:
-        """Report an outcome and optional allowlisted execution evidence."""
+        """Report an outcome; trusted tiers require an outcome-bound receipt."""
         return report_outcome(
             blueprint_id, success, self._blueprints,
             self._storage, execution_id, self._recent_reports,
             evidence_tier=evidence_tier,
             evidence=evidence,
+            verification=verification,
         )
 
     def export_blueprint(

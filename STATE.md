@@ -102,10 +102,24 @@
 - Real SQLite lifecycle evidence exists for local and GitHub hosts. It proves
   learn, trusted promotion, 20 reuses, trusted failure downgrade, immediate
   retirement below score 10, and retirement persistence after Engine reload.
-- Generated reference covers 22 package modules and 176 class, function, and
+- Verified procedure learning now requires an exact bounded v1 host receipt
+  before fingerprinting, deduplication, persistence, score/trust promotion, or
+  mutation. Its detached bounded JSON evidence is canonicalized and its
+  SHA-256 recomputed, so nested content tampering fails with the old digest.
+  The community workflow path cannot self-promote, and every
+  learned/list/search surface explicitly denies execution authority. Blueprint
+  validates internal receipt integrity plus a host-supplied verified claim; it
+  does not prove or execute the external software or physical event.
+- Every non-community outcome report now requires that receipt before dedup or
+  mutation, with canonical nested `outcome_success` as an exact boolean equal
+  to the report argument. A receipt without that binding remains usable for
+  verified learning only. Invalid, stale-digest, unsafe, and mismatched reports
+  leave memory, storage, evidence windows, retirement, and dedup state intact;
+  community observations remain isolated from trusted score and evidence.
+- Generated reference covers 23 package modules and 209 class, function, and
   method declarations. CI rejects declaration, catalog, and MCP schema drift.
-- `.flyto/coding.yaml` still declares the same four required checks — `compile`,
-  `lint`, `generated_reference`, `tests` — but every `argv[0]` is now pinned to
+- `.flyto/coding.yaml` declares five required checks — `compile`, `lint`,
+  `release_drift`, `generated_reference`, `tests` — and every `argv[0]` is pinned to
   the checkout-relative interpreter `.venv/bin/python` because the trusted
   local runner's private HOME resolves `python` to an interpreter without
   `pytest`, `ruff`, or this package. Contributors create the checkout
@@ -130,29 +144,19 @@
   motor action, or authenticated Cloud route. Physical acceptance remains
   pending the OpenCR/device-side issue.
 
-## Verification (2026-08-23)
+## Verification status (2026-08-24)
 
-- All four commands in `.flyto/coding.yaml` passed exactly as declared:
-  compile, Ruff, generated-reference drift, and the full suite (322 tests).
-  Generated references are unchanged because no runtime source, packaged
-  blueprint, catalogue, or tool schema changed.
-- `git diff --check` passed. Indexer task validation passed with its subprocess
-  resolved through the repository-pinned `.venv/bin` toolchain: Ruff passed
-  and the two product-contract tests passed. Strict full-scan verification
-  passed 18/18 with 0 warnings, 0 failures, and 0 scan errors; it scanned 43
-  files, found 536 symbols and 3,032 dependencies, and reported documentation
-  score 100.
-- `python -m build` was run but could not complete in the network-restricted
-  worker: its isolated environment attempted to obtain the declared Hatchling
-  backend from PyPI, and Hatchling is not installed locally. A no-isolation
-  retry confirmed the backend is unavailable. This is an environment limit,
-  not a package-source failure; no dependency or package metadata was changed.
+- This trusted-outcome change requires all five commands in
+  `.flyto/coding.yaml`, package build/import smoke, `git diff --check`, and
+  strict Indexer task/full-scan post-validation. The governed host owns and
+  records the authoritative results after this uncommitted implementation
+  round; this file does not pre-claim those results.
 
 ## Release Notes
 
 - The product-contract change did not alter runtime behavior, public APIs,
   schemas, packaged blueprints, or Apache-2.0 licensing. The 2026-08-23 change
-  does move two dependency floors (`core` extra to `flyto-core>=2.28.1`, the
+  does move two dependency floors (`core` extra to `flyto-core>=2.31.0`, the
   `firestore` extra to bounded ranges) and the version to 0.3.0. Nothing is
   published or deployed by committing it: the PyPI workflow triggers on a `v*`
   tag, which is a separate, deliberate step.

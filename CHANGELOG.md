@@ -42,6 +42,19 @@ matching `flyto-blueprint>=0.3.0` floor lands in `flyto-ai` alongside it.
 
 ### Added
 
+- Added the bounded `flyto.execution-verification-receipt.v1` contract for
+  `learn_from_execution`. Verified learning now requires an exact host claim
+  with a detached bounded JSON evidence object whose canonical SHA-256 is
+  recomputed and matched before learning,
+  before any fingerprint, deduplication, persistence, score/trust promotion,
+  or mutation. `learn_from_workflow` remains community/unverified, and
+  learned/list/search surfaces explicitly carry `execution_authority=false`.
+- Closed the remaining trusted outcome path: every non-community
+  `report_outcome` now requires the same digest-validated receipt with a nested
+  exact boolean `outcome_success` matching the report argument before dedup or
+  any trusted mutation. Community observations remain confined to their
+  isolated counters and cannot add trusted evidence or promote trust.
+
 - `scripts/check_release_drift.py`, a required check in `.flyto/coding.yaml` and
   a CI step: if a tag `v<version>` exists, the packaged source at HEAD must match
   it. This release exists because that condition went unnoticed — 0.2.2 was
