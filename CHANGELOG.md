@@ -10,21 +10,19 @@ newest Blueprint on PyPI and 0.2.2 has no such parameter: the gate existed only
 in a source checkout. Cutting this release is what makes it reachable. The
 matching `flyto-blueprint>=0.3.0` floor lands in `flyto-ai` alongside it.
 
-### Changed
-
-- Raised the `core` extra's floor to `flyto-core>=2.28.1`, the first Core
-  release that clears every published advisory. The previous `>=2.12.0` was
-  satisfied by releases predating all 33 of them.
-- Gave the `firestore` extra real version bounds
-  (`google-cloud-firestore>=2.19.0,<3`, `firebase-admin>=6.5.0,<8`); they were
-  the only unbounded requirements in the project.
-- Renamed the retired bare product name in `ARCHITECTURE.md`, `STATE.md` and
-  this file: `Flyto AI` / `Flyto Core` / `Flyto host` become `Flyto2 AI` /
-  `Flyto2 Core` / `Flyto2 host`, which is what the organisation documentation
-  contract requires and what every other repository already used.
-
 ### Added
 
+- `scripts/check_release_drift.py`, a required check in `.flyto/coding.yaml` and
+  a CI step: if a tag `v<version>` exists, the packaged source at HEAD must match
+  it. This release exists because that condition went unnoticed — 0.2.2 was
+  published while the module-availability parameter stayed unreleased on `main`
+  — and nothing could have reported it, because every check ran against the
+  working tree, which was correct throughout. An unreleased version passes, so
+  the check asks for a correct version number rather than a release.
+
+  The matching advisory-floor check lives in `flyto-ai`, which is the only
+  repository whose CI has Core, Blueprint and the Indexer checked out at once;
+  it covers this project's `flyto-core` floor as well.
 - Added the deterministic `flyto.product-contract.v1` manifest and a
   Python-3.9-compatible dependency-free contract test.
 - Documented Blueprint as Flyto2's independently usable procedure-memory
@@ -73,28 +71,33 @@ matching `flyto-blueprint>=0.3.0` floor lands in `flyto-ai` alongside it.
   whitespace-only, or whitespace-padded entry raises `ValueError`. A padded ID
   is never trimmed on the host's behalf. Any iterable of well-formed IDs is
   accepted, including a generator, which is consumed exactly once.
-
-### Fixed
-
-- Malformed entries in `available_module_ids` are no longer silently dropped.
-  The previous filter discarded non-string and empty entries, which narrowed
-  the gate below what the host actually claimed and could hide or refuse a
-  blueprint with no error explaining why. Operator-visible: a host that was
-  passing a malformed collection now gets an exception instead of a quietly
-  reduced set.
-
-- The four required checks in `.flyto/coding.yaml` now launch again on the
-  trusted local runner. Each Python `argv[0]` is pinned to the checkout-local
-  interpreter `.venv/bin/python`, because the
-  runner's private HOME resolved a bare `python` to an interpreter without
-  `pytest`, `ruff`, or this package, so every check failed at process entry and
-  produced no verification signal. Operator-visible only: the checks, their
-  arguments, their order, and their `required: true` status are unchanged, the
-  path contains no developer or clone identity, and `.github/workflows/ci.yml`
-  does not read this file.
+- Added a versioned four-mode effectiveness suite, strict paired-run validator,
+  deterministic scorecard CLI, statistical reliability/token/latency gates,
+  adversarial multilingual cases, a sealed holdout commitment, and CI
+  verification for committed evidence. No benchmark result is committed yet,
+  so this adds a proof mechanism rather than a performance claim.
+- Added explicit integrity-checked Blueprint export/import, optional
+  host-controlled HMAC publisher signatures, semantic deduplication, sensitive
+  metadata rejection, and quarantine for unsigned or unknown publishers.
+- Added model-facing export/import schemas without signing or trust-key inputs.
+- Added feature and stable Python API guides plus a source-backed reference for
+  all package declarations, packaged blueprints, composition blocks, and MCP
+  input schemas.
+- Added a machine-readable documentation contract and CI drift gate.
+- Added project memory files, workflow docs, and handoff registry.
 
 ### Changed
 
+- Raised the `core` extra's floor to `flyto-core>=2.28.1`, the first Core
+  release that clears every published advisory. The previous `>=2.12.0` was
+  satisfied by releases predating all 33 of them.
+- Gave the `firestore` extra real version bounds
+  (`google-cloud-firestore>=2.19.0,<3`, `firebase-admin>=6.5.0,<8`); they were
+  the only unbounded requirements in the project.
+- Renamed the retired bare product name in `ARCHITECTURE.md`, `STATE.md` and
+  this file: `Flyto AI` / `Flyto Core` / `Flyto host` become `Flyto2 AI` /
+  `Flyto2 Core` / `Flyto2 host`, which is what the organisation documentation
+  contract requires and what every other repository already used.
 - Blueprint list/search summaries now expose ordered, unique `module_ids`
   without step parameters or results for trust-gated capability routing.
 - Clarified the public `ci_verified` evidence-tier constant name and emit
@@ -120,19 +123,20 @@ matching `flyto-blueprint>=0.3.0` floor lands in `flyto-ai` alongside it.
 - Prepared a metadata-only PyPI patch release so live registry backlinks and
   the Flyto2 package description can replace the stale pre-Flyto2 listing.
 
-### Added
+### Fixed
 
-- Added a versioned four-mode effectiveness suite, strict paired-run validator,
-  deterministic scorecard CLI, statistical reliability/token/latency gates,
-  adversarial multilingual cases, a sealed holdout commitment, and CI
-  verification for committed evidence. No benchmark result is committed yet,
-  so this adds a proof mechanism rather than a performance claim.
-- Added explicit integrity-checked Blueprint export/import, optional
-  host-controlled HMAC publisher signatures, semantic deduplication, sensitive
-  metadata rejection, and quarantine for unsigned or unknown publishers.
-- Added model-facing export/import schemas without signing or trust-key inputs.
-- Added feature and stable Python API guides plus a source-backed reference for
-  all package declarations, packaged blueprints, composition blocks, and MCP
-  input schemas.
-- Added a machine-readable documentation contract and CI drift gate.
-- Added project memory files, workflow docs, and handoff registry.
+- Malformed entries in `available_module_ids` are no longer silently dropped.
+  The previous filter discarded non-string and empty entries, which narrowed
+  the gate below what the host actually claimed and could hide or refuse a
+  blueprint with no error explaining why. Operator-visible: a host that was
+  passing a malformed collection now gets an exception instead of a quietly
+  reduced set.
+- The four required checks in `.flyto/coding.yaml` now launch again on the
+  trusted local runner. Each Python `argv[0]` is pinned to the checkout-local
+  interpreter `.venv/bin/python`, because the
+  runner's private HOME resolved a bare `python` to an interpreter without
+  `pytest`, `ruff`, or this package, so every check failed at process entry and
+  produced no verification signal. Operator-visible only: the checks, their
+  arguments, their order, and their `required: true` status are unchanged, the
+  path contains no developer or clone identity, and `.github/workflows/ci.yml`
+  does not read this file.

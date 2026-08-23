@@ -39,6 +39,13 @@
   in 0.2.2+ development was silently inert for every PyPI install -- 0.2.2 has
   no such parameter. The gate becomes reachable when this release ships, not
   when it was merged.
+- A release-drift check now guards that condition instead of memory:
+  `scripts/check_release_drift.py` is a required check in `.flyto/coding.yaml`
+  and a CI step, and fails when a tag `v<version>` exists while the packaged
+  source at HEAD differs from it. An unreleased version passes, so it asks for a
+  correct version number rather than a release. The matching advisory-floor
+  check lives in `flyto-ai`, the only repository whose CI has all three
+  checkouts present; it covers this project's `flyto-core` floor too.
 - Stable package root exports `BlueprintEngine`, `StorageBackend`,
   `MemoryBackend`, and `get_engine`.
 - The package ships 33 workflow blueprints, one composition block, six MCP

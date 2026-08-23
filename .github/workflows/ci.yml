@@ -19,7 +19,14 @@ jobs:
     name: Test, lint, build, verify
     runs-on: ubuntu-latest
     steps:
+      # `fetch-tags` because the release-drift check compares HEAD against the
+      # tag the declared version names. Without tag history it cannot separate
+      # "this version is unreleased" from "this version already shipped other
+      # code", and it fails loudly rather than reporting an unearned pass.
       - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - uses: actions/setup-python@v7
         with:
@@ -30,6 +37,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]" build "ruff==0.15.15" "flyto-indexer @ git+https://github.com/flytohub/flyto-indexer@1b624987b15ef7cd2361370478d07ea36e5aa5ee"
+
+      - name: Check release drift
+        run: python scripts/check_release_drift.py
 
       - name: Lint
         run: ruff check .
