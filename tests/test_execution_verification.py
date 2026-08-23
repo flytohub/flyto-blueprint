@@ -73,13 +73,18 @@ def test_low_level_trust_claims_fail_before_any_input_or_state_mutation(
     assert blocks == before_blocks
 
 
-def test_low_level_valid_receipt_can_create_only_local_verified_memory():
+def test_low_level_explicit_local_verified_receipt_is_canonical_and_detached():
     blueprints = {}
-    receipt = verification_receipt("low-level-valid")
+    evidence = {
+        "result": {"unit": "items", "value": 3},
+        "assumptions": ["deterministic inputs"],
+        "solver": "test.fixture",
+    }
+    receipt = verification_receipt("low-level-valid", evidence)
 
     result = low_level_learn(
         make_workflow(tag="low-level-valid"), blueprints, {},
-        verified=True, verification=receipt,
+        verified=False, trust_tier="local_verified", verification=receipt,
     )
 
     assert result["ok"] is True
@@ -87,6 +92,18 @@ def test_low_level_valid_receipt_can_create_only_local_verified_memory():
     assert result["data"]["provenance"]["origin"] == "local_execution"
     assert result["data"]["trust_tier"] == "local_verified"
     assert result["data"]["verification"] == receipt
+    assert list(result["data"]["verification"]["evidence"]) == [
+        "assumptions", "result", "solver",
+    ]
+    assert result["data"]["execution_authority"] is False
+
+    evidence["result"]["value"] = 999
+    evidence["assumptions"].append("caller mutation")
+
+    assert result["data"]["verification"]["evidence"]["result"]["value"] == 3
+    assert result["data"]["verification"]["evidence"]["assumptions"] == [
+        "deterministic inputs",
+    ]
 
 
 def test_low_level_community_learning_remains_explicit():
