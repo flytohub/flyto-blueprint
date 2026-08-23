@@ -441,17 +441,15 @@ def boost_score(
     delta: int,
     blueprints: Dict[str, dict],
     storage: Optional[StorageBackend] = None,
-) -> None:
-    """Increase a blueprint's score by *delta* (clamped 0–100)."""
-    bp = blueprints.get(blueprint_id)
-    if not bp:
-        return
-    bp["score"] = min(100, max(0, bp.get("score", 50) + delta))
-    if storage is not None:
-        try:
-            storage.update(blueprint_id, {"score": bp["score"]})
-        except Exception:
-            pass
+) -> dict:
+    """Reject arbitrary score mutation; use receipt-bound ``report_outcome``."""
+    return {
+        "ok": False,
+        "code": "TRUSTED_OUTCOME_RECEIPT_REQUIRED",
+        "error": "score changes require receipt-bound report_outcome",
+        "blueprint_id": blueprint_id,
+        "score_changed": False,
+    }
 
 
 def record_use(

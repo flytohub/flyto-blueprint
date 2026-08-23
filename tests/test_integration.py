@@ -67,7 +67,7 @@ class TestFullLifecycleMemory:
         ids = [b["id"] for b in results]
         assert bp_id in ids
 
-    def test_dedup_and_boost_cycle(self):
+    def test_duplicate_learning_is_a_non_mutating_cycle(self):
         engine = BlueprintEngine(storage=MemoryBackend())
 
         wf = {
@@ -82,12 +82,14 @@ class TestFullLifecycleMemory:
         r1 = engine.learn_from_workflow(wf, name="original")
         assert "data" in r1
         bp_id = r1["data"]["id"]
-        original_score = engine._blueprints[bp_id]["score"]
+        original = engine._blueprints[bp_id].copy()
+        stored = engine._storage.load_one(bp_id)
 
-        # Same structure → dedup boost
+        # Same structure is reported without treating repetition as evidence.
         r2 = engine.learn_from_workflow(wf, name="duplicate")
-        assert r2["action"] == "boosted_existing"
-        assert engine._blueprints[bp_id]["score"] == original_score + 3
+        assert r2["action"] == "deduplicated_existing"
+        assert engine._blueprints[bp_id] == original
+        assert engine._storage.load_one(bp_id) == stored
 
 
 class TestFullLifecycleSQLite:

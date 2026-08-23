@@ -54,6 +54,12 @@ matching `flyto-blueprint>=0.3.0` floor lands in `flyto-ai` alongside it.
   exact boolean `outcome_success` matching the report argument before dedup or
   any trusted mutation. Community observations remain confined to their
   isolated counters and cannot add trusted evidence or promote trust.
+- Closed trust promotion through repetition and direct imports. Duplicate
+  community and receipt-valid learning now returns `deduplicated_existing`
+  without changing memory, storage, score, tier, evidence, counters, or recent
+  reports. Arbitrary `boost_score` calls are rejected, and the low-level
+  learner now receipt-gates trusted claims before workflow inspection while
+  limiting generic receipts to `local_verified` (never CI or official).
 
 - `scripts/check_release_drift.py`, a required check in `.flyto/coding.yaml` and
   a CI step: if a tag `v<version>` exists, the packaged source at HEAD must match

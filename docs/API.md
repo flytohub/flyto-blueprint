@@ -124,12 +124,20 @@ engine.learn_from_workflow(
 ```
 
 Abstracts concrete workflow values into reusable arguments, fingerprints the
-structure, boosts an existing match when deduplicated, and persists a new
+structure, returns `deduplicated_existing` without mutating an existing match,
+and persists a new
 blueprint when storage is configured. `compatibility` scopes structurally
 identical patterns to a repository, framework, runtime, or environment;
 `verification` stores non-secret community metadata. This is the explicit
 community/unverified path: `verified=True` or a non-community `trust_tier` is
 rejected and directs the caller to `learn_from_execution`.
+
+The lower-level `flyto_blueprint.learn.learn_from_workflow` function applies
+the same gate before reading steps or computing a fingerprint. Direct imports
+may create `local_verified` memory only with a valid receipt; the generic local
+receipt cannot establish `ci_verified` or `official`. The legacy public
+`boost_score` helper rejects arbitrary mutations. Trusted score changes must
+use receipt-bound `report_outcome`.
 
 ### `learn_from_execution(...)`
 
@@ -202,6 +210,10 @@ score/count/trust changes, evidence samples, retirement, or persistence.
 updates separate Bayesian counters; it can influence ranking within a bounded
 confidence cap but cannot rewrite the trusted score. Recent execution
 identifiers are deduplicated.
+
+Learning deduplication is separate from outcome deduplication. Re-submitting an
+identical community or verified workflow returns `deduplicated_existing` and
+does not change score, tier, storage, evidence, counters, or recent reports.
 
 For trusted runtime reports, only these fields from the receipt's canonical
 nested `evidence` are normalized into a detailed sample:

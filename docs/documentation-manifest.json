@@ -105,7 +105,7 @@
       "title": "Workflow learning and scoring",
       "kind": "library",
       "status": "active",
-      "description": "Validates bounded host execution receipts before trusted learning, fingerprints workflows with compatibility context, abstracts reusable parameters, deduplicates patterns, and separates trusted scores from bounded community observations.",
+      "description": "Validates bounded host execution receipts at engine and direct-import boundaries before trusted learning, limits generic receipts to local_verified, deduplicates without mutation, disables arbitrary boosts, and changes trusted scores only through receipt-bound outcomes.",
       "source": ["flyto_blueprint/execution_verification.py", "flyto_blueprint/learn.py", "flyto_blueprint/fingerprint.py", "flyto_blueprint/scoring.py", "flyto_blueprint/engine.py"],
       "documentation": ["docs/FEATURES.md#workflow-learning", "docs/FEATURES.md#outcome-scoring", "docs/API.md#learn_from_workflow", "docs/API.md#learn_from_execution"],
       "tests": ["tests/test_execution_verification.py", "tests/test_learn.py", "tests/test_fingerprint.py", "tests/test_scoring.py"]

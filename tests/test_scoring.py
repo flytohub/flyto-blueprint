@@ -1,8 +1,10 @@
 # Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
 """Tests for +5/-10 scoring, caps, auto-retire, and execution_id dedup."""
+import copy
+
 from conftest import make_workflow, outcome_receipt
-from flyto_blueprint.scoring import report_outcome
+from flyto_blueprint.scoring import boost_score, report_outcome
 
 
 def trusted_report(engine, blueprint_id, success, **kwargs):
@@ -17,6 +19,19 @@ def trusted_report(engine, blueprint_id, success, **kwargs):
 
 
 class TestReportOutcome:
+
+    def test_arbitrary_boost_is_rejected_without_mutation(self, memory_backend):
+        blueprints = {"direct": {"id": "direct", "score": 50}}
+        memory_backend.save("direct", blueprints["direct"])
+        before_memory = copy.deepcopy(blueprints)
+        before_storage = memory_backend.load_one("direct")
+
+        result = boost_score("direct", 50, blueprints, memory_backend)
+
+        assert result["code"] == "TRUSTED_OUTCOME_RECEIPT_REQUIRED"
+        assert result["score_changed"] is False
+        assert blueprints == before_memory
+        assert memory_backend.load_one("direct") == before_storage
 
     def test_direct_scoring_call_requires_receipt_and_valid_call_changes_score(self):
         blueprints = {"direct": {"id": "direct", "score": 50, "trust_tier": "community"}}

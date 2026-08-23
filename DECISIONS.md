@@ -1,5 +1,23 @@
 # Decisions
 
+## 2026-08-24 - Learning repetition is not outcome evidence
+
+Decision: structural duplicate learning is an identity result only. Return
+`deduplicated_existing` for both community and receipt-valid calls and leave
+the existing Blueprint, persisted row, score, trust tier, evidence, counters,
+and recent-report state unchanged. Reject the arbitrary public `boost_score`
+mutation path; trusted score changes require receipt-bound `report_outcome`.
+
+Enforce the receipt boundary again inside the directly importable low-level
+learner before reading workflow steps or fingerprinting. A generic valid host
+receipt may establish only `local_verified`; caller-selected `ci_verified` and
+`official` claims are rejected because those tiers require their separately
+governed provenance paths.
+
+Reason: repetition proves only that the same structure was submitted again.
+Treating it as a quality outcome or allowing direct callers to select trust
+bypasses the evidence contract even when the engine wrapper is correct.
+
 ## 2026-08-24 - Durable means durable across processes, not across threads
 
 Decision: `SQLiteBackend` is correct under concurrent processes. WAL, a

@@ -17,7 +17,7 @@ from flyto_blueprint.execution_verification import (
 )
 from flyto_blueprint.learn import learn_from_workflow as _learn
 from flyto_blueprint.loader import load_blocks, load_builtins
-from flyto_blueprint.scoring import boost_score, record_use, report_outcome
+from flyto_blueprint.scoring import record_use, report_outcome
 from flyto_blueprint.search import list_blueprints as _list, search_blueprints as _search
 from flyto_blueprint.sharing import (
     SigningKey,
@@ -231,9 +231,7 @@ class BlueprintEngine:
         if not result.get("ok"):
             return result
 
-        # Dedup boost
-        if result.get("action") == "boosted_existing":
-            boost_score(result["blueprint_id"], 3, self._blueprints, self._storage)
+        if result.get("action") == "deduplicated_existing":
             return result
 
         bp = result["data"]

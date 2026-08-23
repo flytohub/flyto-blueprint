@@ -61,6 +61,11 @@
 - Continuous learning separates trusted scores from bounded community
   observations, scopes reuse with compatibility metadata, and preserves
   retry/assertion contracts.
+- Duplicate learning is non-promoting for both community and verified calls:
+  it reports `deduplicated_existing` with memory, storage, trust, evidence,
+  counters, and recent-report state unchanged. Arbitrary score boosts are
+  disabled; the direct low-level learner independently receipt-gates trusted
+  input and generic receipts cannot claim CI or official trust.
 - Portable bundle export/import is explicit, integrity-checked, sensitive-data
   guarded, optionally host-signed, and quarantines unknown publishers.
 - Every Blueprint summary exposes an Evidence Card with trusted outcome counts,

@@ -9,6 +9,7 @@ import pytest
 from conftest import make_workflow, outcome_receipt, verification_receipt
 from flyto_blueprint import BlueprintEngine
 from flyto_blueprint.execution_verification import validate_execution_verification_receipt
+from flyto_blueprint.learn import learn_from_workflow as low_level_learn
 from flyto_blueprint.storage.memory import MemoryBackend
 
 
@@ -32,6 +33,98 @@ _SOLVER_EVIDENCE = {
         "result": {"dilution_factor": 4, "unit": "ratio"},
     },
 }
+
+
+@pytest.mark.parametrize(
+    ("verified", "trust_tier", "receipt", "code"),
+    [
+        (True, None, None, "INVALID_EXECUTION_VERIFICATION_RECEIPT"),
+        (True, None, {**verification_receipt("tampered-low"), "success": False},
+         "INVALID_EXECUTION_VERIFICATION_RECEIPT"),
+        (False, "local_verified", None, "INVALID_EXECUTION_VERIFICATION_RECEIPT"),
+        (False, "ci_verified", verification_receipt("fake-ci"),
+         "UNSUPPORTED_VERIFICATION_TRUST_TIER"),
+        (False, "official", verification_receipt("fake-official"),
+         "UNSUPPORTED_VERIFICATION_TRUST_TIER"),
+        (False, "self_claimed", verification_receipt("fake-arbitrary"),
+         "UNSUPPORTED_VERIFICATION_TRUST_TIER"),
+    ],
+)
+def test_low_level_trust_claims_fail_before_any_input_or_state_mutation(
+    verified, trust_tier, receipt, code,
+):
+    class WorkflowThatMustNotBeRead(dict):
+        def get(self, *args, **kwargs):
+            raise AssertionError("trust gate inspected workflow before rejection")
+
+    blueprints = {"sentinel": {"id": "sentinel", "score": 71}}
+    blocks = {"sentinel": {"steps": []}}
+    before_blueprints = copy.deepcopy(blueprints)
+    before_blocks = copy.deepcopy(blocks)
+
+    result = low_level_learn(
+        WorkflowThatMustNotBeRead(), blueprints, blocks,
+        verified=verified, trust_tier=trust_tier, verification=receipt,
+    )
+
+    assert result["ok"] is False
+    assert result["code"] == code
+    assert blueprints == before_blueprints
+    assert blocks == before_blocks
+
+
+def test_low_level_valid_receipt_can_create_only_local_verified_memory():
+    blueprints = {}
+    receipt = verification_receipt("low-level-valid")
+
+    result = low_level_learn(
+        make_workflow(tag="low-level-valid"), blueprints, {},
+        verified=True, verification=receipt,
+    )
+
+    assert result["ok"] is True
+    assert result["data"]["score"] == 70
+    assert result["data"]["provenance"]["origin"] == "local_execution"
+    assert result["data"]["trust_tier"] == "local_verified"
+    assert result["data"]["verification"] == receipt
+
+
+def test_low_level_community_learning_remains_explicit():
+    result = low_level_learn(
+        make_workflow(tag="low-level-community"), {}, {},
+        verified=False, trust_tier="community",
+    )
+
+    assert result["ok"] is True
+    assert result["data"]["score"] == 50
+    assert result["data"]["provenance"]["origin"] == "local_workflow"
+    assert result["data"]["trust_tier"] == "community"
+
+
+def test_verified_duplicate_learning_is_byte_for_byte_non_mutating():
+    storage = MemoryBackend()
+    engine = BlueprintEngine(storage=storage)
+    workflow = make_workflow(tag="verified-dedup-no-mutation")
+    first = engine.learn_from_execution(
+        workflow, verification=verification_receipt("verified-first"),
+    )
+    blueprint_id = first["data"]["id"]
+    before_memory = copy.deepcopy(engine._blueprints)
+    before_storage = copy.deepcopy(storage.load_all())
+    before_recent = copy.deepcopy(engine._recent_reports)
+
+    duplicate = engine.learn_from_execution(
+        workflow, verification=verification_receipt("verified-duplicate"),
+    )
+
+    assert duplicate == {
+        "ok": True,
+        "action": "deduplicated_existing",
+        "blueprint_id": blueprint_id,
+    }
+    assert engine._blueprints == before_memory
+    assert storage.load_all() == before_storage
+    assert engine._recent_reports == before_recent
 
 
 @pytest.mark.parametrize("missing", [None, verification_receipt("solver-without-outcome")])

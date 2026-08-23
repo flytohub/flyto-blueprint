@@ -8,6 +8,9 @@ import re
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+from flyto_blueprint.execution_verification import (
+    validate_execution_verification_receipt,
+)
 from flyto_blueprint.fingerprint import compute_fingerprint
 from flyto_blueprint.template import abstract_params
 
@@ -31,23 +34,46 @@ def learn_from_workflow(
     stay fixed. Detects compose opportunities (browser.launch + browser.goto
     → browser_init).
 
-    Dedup: if a blueprint with the same structure already exists, returns
-    ``{"ok": True, "action": "boosted_existing", "blueprint_id": ...}``.
+    Dedup: if a blueprint with the same structure already exists, returns a
+    non-promoting ``deduplicated_existing`` result.
 
     Returns the new blueprint data dict (not yet persisted — caller must
     handle storage).
     """
+    # This function is public and directly importable, so enforce the same
+    # trust boundary as BlueprintEngine before inspecting or fingerprinting
+    # caller-controlled workflow data.  The generic v1 receipt establishes
+    # only the local_verified tier; CI and official promotion need a distinct
+    # governed import/report path rather than a caller-selected string.
+    if verified is not False or trust_tier not in (None, "community"):
+        if trust_tier not in (None, "community", "local_verified"):
+            return {
+                "ok": False,
+                "code": "UNSUPPORTED_VERIFICATION_TRUST_TIER",
+                "error": "generic execution receipts can establish only local_verified trust",
+                "execution_authority": False,
+            }
+        try:
+            verification = validate_execution_verification_receipt(verification)
+        except ValueError as exc:
+            return {
+                "ok": False,
+                "code": "INVALID_EXECUTION_VERIFICATION_RECEIPT",
+                "error": str(exc),
+                "execution_authority": False,
+            }
+        verified = True
+        trust_tier = "local_verified"
+    else:
+        verified = False
+        trust_tier = "community"
+
     steps = workflow.get("steps", [])
     if not steps:
         return {"ok": False, "error": "Workflow has no steps"}
 
     if len(steps) < 3:
         return {"ok": False, "error": "Workflow too simple (min 3 steps)"}
-
-    if trust_tier is None:
-        trust_tier = "local_verified" if verified else "community"
-    if trust_tier not in ("community", "local_verified", "ci_verified", "official"):
-        return {"ok": False, "error": "Unknown trust tier '{}'".format(trust_tier)}
 
     # Fingerprint dedup. Repository/environment context scopes structurally
     # identical coding patterns so one repo's conventions do not overwrite
@@ -62,7 +88,7 @@ def learn_from_workflow(
     if existing_id:
         return {
             "ok": True,
-            "action": "boosted_existing",
+            "action": "deduplicated_existing",
             "blueprint_id": existing_id,
         }
 

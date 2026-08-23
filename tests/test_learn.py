@@ -1,6 +1,8 @@
 # Copyright 2024 Flyto2
 # Licensed under the Apache License, Version 2.0
-"""Tests for learning, dedup, abstraction, and compose detection."""
+"""Tests for learning, non-promoting dedup, abstraction, and compose detection."""
+import copy
+
 from conftest import make_workflow, make_workflow_alt
 
 
@@ -30,25 +32,27 @@ class TestLearnFromWorkflow:
         result = engine.learn_from_workflow({"steps": []})
         assert result["ok"] is False
 
-    def test_dedup_boosts_existing(self, engine):
+    def test_duplicate_is_explicitly_non_promoting(self, engine, memory_backend):
         wf = make_workflow(tag="dedup_test")
         r1 = engine.learn_from_workflow(wf, name="dedup_orig")
         assert r1["ok"] is True
         assert "data" in r1
 
+        bp_id = r1["data"]["id"]
+        before_memory = copy.deepcopy(engine._blueprints)
+        before_storage = copy.deepcopy(memory_backend.load_all())
+        before_recent = copy.deepcopy(engine._recent_reports)
+
         r2 = engine.learn_from_workflow(wf, name="dedup_copy")
         assert r2["ok"] is True
-        assert r2["action"] == "boosted_existing"
-
-    def test_dedup_boost_adds_3(self, engine):
-        wf = make_workflow(tag="boost_test")
-        r1 = engine.learn_from_workflow(wf, name="boost_orig")
-        bp_id = r1["data"]["id"]
-
-        before = engine._blueprints[bp_id]["score"]
-        engine.learn_from_workflow(wf, name="boost_dup")
-        after = engine._blueprints[bp_id]["score"]
-        assert after == before + 3
+        assert r2 == {
+            "ok": True,
+            "action": "deduplicated_existing",
+            "blueprint_id": bp_id,
+        }
+        assert engine._blueprints == before_memory
+        assert memory_backend.load_all() == before_storage
+        assert engine._recent_reports == before_recent
 
     def test_stores_fingerprint(self, engine):
         result = engine.learn_from_workflow(make_workflow(), name="fp_test")

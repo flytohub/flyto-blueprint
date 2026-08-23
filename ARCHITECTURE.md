@@ -102,6 +102,14 @@ Boundary:
   unknown-publisher imports are quarantined as community content; only
   host-configured publisher keys can preserve CI or official trust.
 - Community observations are stored separately from trusted execution scores.
+  Repeating either community or receipt-valid verified learning is identity
+  deduplication only: it returns `deduplicated_existing` and changes no score,
+  tier, evidence, counter, recent-report entry, memory object, or storage row.
+  The former public `boost_score` surface rejects every mutation; trusted score
+  changes enter only through receipt-bound `report_outcome`.
+  The directly importable low-level learner validates receipts before reading
+  workflow steps or computing fingerprints, permits generic receipts to create
+  only `local_verified` memory, and rejects caller-selected CI/official tiers.
   They can influence search within a bounded confidence cap but cannot
   self-promote a Blueprint to a verified tier.
 - Repository/framework/runtime compatibility participates in learning

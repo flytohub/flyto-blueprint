@@ -115,12 +115,19 @@ digest to a detached, solver-shaped JSON evidence object. The digest covers
 the object's sorted-key, compact UTF-8 JSON encoding and is recomputed before
 learning. Invalid receipts are rejected before fingerprinting,
 deduplication, persistence, or scoring. `learn_from_workflow` remains the
-explicit community/unverified route. Blueprint validates the host claim's
+explicit community/unverified route. Duplicate community and verified learning
+returns `deduplicated_existing` without promotion or any stored/in-memory state
+change. The low-level import validates the same gate before workflow access;
+generic receipts establish only `local_verified`, never CI or official trust.
+Blueprint validates the host claim's
 internal integrity; it does not prove the external software or physical event,
 train a model, execute a solver, contact Core, hardware, a network, or an LLM,
 or grant execution approval. The envelope is generic and has no Core import.
 
 ## Outcome Scoring
+
+Arbitrary public score boosts are disabled. Trusted score changes enter only
+through receipt-bound `report_outcome`.
 
 Trusted local, CI, and official success/failure evidence updates the primary
 score only after an exact digest-validated receipt binds nested boolean
