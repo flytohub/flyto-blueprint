@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.1
+
+### Changed
+
+- Raised the `core` extra's floor to `flyto-core>=2.31.1`. Core published
+  GHSA-wmwj-g59x-c8px, critical: `verify.spec` reached past the module
+  allowlist and the dangerous-permission gate to execute arbitrary host
+  commands. 2.31.0 is affected.
+
+  A floor rather than a note, for the reason this package already states about
+  every other floor: nothing here checks a Core version at runtime, so an
+  environment already holding 2.31.0 would satisfy a weaker declaration and
+  keep running.
+
 ## 0.3.0
 
 ### Fixed
