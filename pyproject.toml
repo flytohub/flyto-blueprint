@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "flyto-blueprint"
-version = "0.3.0"
+version = "0.3.1"
 description = "Self-evolving workflow pattern engine for Flyto2"
 readme = "README.md"
 license = "Apache-2.0"
@@ -33,7 +33,7 @@ flyto-blueprint-benchmark = "flyto_blueprint.benchmark:main"
 # security/advisories.json and checks this file too, because flyto-ai's CI is the
 # only place in the stack with all three checkouts present. Blueprint remains
 # Core-import-free and validates only the protocol.
-core = ["flyto-core>=2.31.0"]
+core = ["flyto-core>=2.31.1"]
 # Floors, like every other dependency here: an unbounded name resolves to
 # whatever exists, including a yanked or pre-1.0 line.
 firestore = ["google-cloud-firestore>=2.19.0,<3", "firebase-admin>=6.5.0,<8"]
