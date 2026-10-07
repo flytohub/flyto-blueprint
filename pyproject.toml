@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "flyto-blueprint"
-version = "0.3.1"
+version = "0.3.2"
 description = "Self-evolving workflow pattern engine for Flyto2"
 readme = "README.md"
 license = "Apache-2.0"
@@ -27,13 +27,16 @@ flyto-blueprint-benchmark = "flyto_blueprint.benchmark:main"
 
 [project.optional-dependencies]
 # 2.31.0 is the first Core line publishing all three semantic solver providers
-# with this generic envelope and also clears every currently published advisory. The
+# with this generic envelope. 2.33.0 is the floor because it is the first release
+# clearing every published Core advisory (the 2026-09-30 batch: two SSRF bypasses,
+# HF_TOKEN exfiltration, env.set secret disclosure, an out-of-sandbox image read
+# and a verification-callback secret leak all affect < 2.33.0). The
 # number is not a constant to keep in step by hand: flyto-ai's
 # tests/test_stack_security_floor.py derives it from flyto-core's own
 # security/advisories.json and checks this file too, because flyto-ai's CI is the
 # only place in the stack with all three checkouts present. Blueprint remains
 # Core-import-free and validates only the protocol.
-core = ["flyto-core>=2.31.1"]
+core = ["flyto-core>=2.33.0"]
 # Floors, like every other dependency here: an unbounded name resolves to
 # whatever exists, including a yanked or pre-1.0 line.
 firestore = ["google-cloud-firestore>=2.19.0,<3", "firebase-admin>=6.5.0,<8"]

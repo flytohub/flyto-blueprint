@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.2
+
+### Changed
+
+- Raised the `core` extra's floor to `flyto-core>=2.33.0`. Core published six
+  advisories on 2026-09-30 affecting every release below 2.33.0: SSRF via
+  `base_url` in `llm.agent`/`ai.model` (high), `env.set` disclosing host
+  environment variables (high), `HF_TOKEN` exfiltration through `huggingface.*`
+  (high), a Teredo SSRF-guard bypass, a DNS-rebinding leak of the runner secret
+  in the verification callback, and an out-of-sandbox image read in
+  `verify.visual_diff`. flyto-ai's scheduled advisory-freshness gate reports
+  this floor against Core's `main` and was red on it.
+
 ## 0.3.1
 
 ### Changed
